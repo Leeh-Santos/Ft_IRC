@@ -33,6 +33,8 @@ private:
 	static bool Signal; 
 	std::vector<Client> clients; 
 	std::vector<struct pollfd> fds; 
+
+	std::string serverpass;
 public:
 	Server(){SerSocketFd = -1;} 
 	void ServerInit(); 
