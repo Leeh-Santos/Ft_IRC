@@ -44,7 +44,6 @@ void Server::ReceiveNewData(int fd)
 		ClearClients(fd); 
 		close(fd); //-> close client socket
 	}
-
 	else{ 
 		buff[bytes] = '\0';
 		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;

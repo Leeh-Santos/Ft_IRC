@@ -6,6 +6,8 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
+    //  port_int < 1024 || port_int > 49151 || s[0] != '\0'
+
     Server ser;
     std::cout << "---- SERVER ----" << std::endl;
     try{
