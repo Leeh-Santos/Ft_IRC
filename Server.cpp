@@ -34,6 +34,8 @@ void	Server::CloseFds(){
 
 void Server::ReceiveNewData(int fd)
 {
+	//em caso de merda, veridicar de novo o fd que ta sendo mandado
+
 	char buff[1024]; //-> buffer for the received data
 	memset(buff, 0, sizeof(buff)); //-> clear the buffer
 
@@ -44,10 +46,11 @@ void Server::ReceiveNewData(int fd)
 		ClearClients(fd); 
 		close(fd); //-> close client socket
 	}
-	else{ 
+	else{
+		
 		buff[bytes] = '\0';
 		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		//here you can add your code to process the received data: parse, check, authenticate, handle the command, etc...
+		//asds
 	}
 }
 
@@ -71,6 +74,7 @@ void Server::AcceptNewClient()
 
 	cli.SetFd(incofd); //-> set the client file descriptor
 	cli.setIpAdd(inet_ntoa((cliadd.sin_addr))); //-> convert the ip address to string and set it
+
 	clients.push_back(cli); //-> add the client to the vector of clients
 	fds.push_back(NewPoll); //-> add the client socket to the pollfd
 
@@ -121,7 +125,7 @@ void Server::ServerInit()
 		for (size_t i = 0; i < fds.size(); i++){ //-> check all file descriptors
 			if (fds[i].revents & POLLIN){ //-> check if there is data to read
 				if (fds[i].fd == SerSocketFd)
-					AcceptNewClient(); 
+					AcceptNewClient();
 				else
 					ReceiveNewData(fds[i].fd); 
 			}
@@ -130,8 +134,21 @@ void Server::ServerInit()
 	CloseFds();
 }
 
-/*struct pollfd {
+/*struct pollfd { server 
  int     fd; //-> file descriptor
  short   events;//-> requested events
- short   revents;//-> returned events
+ short   revents; //-> returned events
+};*/
+
+/*struct pollfd { cl1
+ int     fd; //-> file descriptor
+ short   events;//-> requested events
+ short   revents = 1 ;//-> returned events
+};*/
+
+
+/*struct pollfd { cl2
+ int     fd; //-> file descriptor
+ short   events;//-> requested events
+ short   revents = 1 ;//-> returned events
 };*/

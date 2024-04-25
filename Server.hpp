@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <cstdlib>
 //-------------------------------------------------------//
 #define RED "\e[1;31m" 
 #define WHI "\e[0;37m" 
@@ -33,6 +34,7 @@ private:
 	static bool Signal; 
 	std::vector<Client> clients; 
 	std::vector<struct pollfd> fds; 
+	
 
 	std::string serverpass;
 public:
