@@ -16,12 +16,18 @@ private:
     std::string nick;
     std::string user;
 
+    bool verified;
+
 public:
     Client(){}; //-> default constructor
     int GetFd(){return Fd;} //-> getter for fd
-
     void SetFd(int fd){Fd = fd;} //-> setter for fd
     void setIpAdd(std::string ipadd){IPadd = ipadd;} //-> setter for ipadd
+    void set_verified(int);
+
+    void add_buffer(std::string str);
+    int is_verified();
+    
 };
 
 # endif

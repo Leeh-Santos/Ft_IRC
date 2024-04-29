@@ -47,12 +47,12 @@ public:
 	void ServerInit(); 
 	void SerSocket(); 
 	void AcceptNewClient(); 
-	void ReceiveNewData(int fd, Client&); 
+	void ReceiveNewData(int fd, Client); 
 	static void SignalHandler(int signum); 
 	void CloseFds(); 
 	void ClearClients(int fd); 
 
-	Client& get_client(int, std::vector<Client>);
+	Client get_client(int, std::vector<Client>);
 };
 
 

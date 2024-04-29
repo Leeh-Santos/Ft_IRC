@@ -32,7 +32,7 @@ void	Server::CloseFds(){
 	}
 }
 
-void Server::ReceiveNewData(int fd, Client& cli)
+void Server::ReceiveNewData(int fd, Client cli)
 {
 	//em caso de merda, veridicar de novo o fd que ta sendo mandado
 	if (cli.GetFd() == SerSocketFd)
@@ -52,11 +52,18 @@ void Server::ReceiveNewData(int fd, Client& cli)
 		close(fd); // close specific client fd
 	}
 	else{
-		if (in.find("\r\n") == std::string::npos){ 
-			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
+		// CAP / pass 
+		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
+		if (cli.is_verified()){
+			if (in.find("\r\n") == std::string::npos){ 
+			}
 		}
-		
-	}
+		else
+			std::cout << "you need to verify firts" << std::endl;
+			//if (!cli.pass)
+			//if (!cli.user)
+			// //if (!cli.pass) print msg 
+		}
 }
 
 void Server::AcceptNewClient()
@@ -79,6 +86,7 @@ void Server::AcceptNewClient()
 
 	cli.SetFd(incofd); //-> set the client file descriptor
 	cli.setIpAdd(inet_ntoa((cliadd.sin_addr))); //-> convert the ip address to string and set it
+	cli.set_verified(0);
 
 	clients.push_back(cli); //-> add the client to the vector of clients
 	fds.push_back(NewPoll); //-> add the client socket to the pollfd
@@ -114,7 +122,7 @@ void Server::SerSocket()
 	fds.push_back(NewPoll); //-> add the server socket to the pollfd
 }
 
-Client& Server::get_client(int fd, std::vector<Client> cli){
+Client Server::get_client(int fd, std::vector<Client> cli){
 
 	/*std::vector<Client>::iterator it = std::find(cli.begin(), cli.end(), fd);
 	if (it != cli.end())
