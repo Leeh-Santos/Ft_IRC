@@ -18,6 +18,7 @@
 #include <string.h>
 #include <string>
 #include <cstdlib>
+#include <algorithm>
 //-------------------------------------------------------//
 #define RED "\e[1;31m" 
 #define WHI "\e[0;37m" 
@@ -35,18 +36,23 @@ private:
 	std::vector<Client> clients; 
 	std::vector<struct pollfd> fds; 
 	
-
 	std::string serverpass;
 public:
-	Server(){SerSocketFd = -1;} 
+	Server(int port, char *pass){
+		SerSocketFd = -1;
+		Port = port;
+		std::string tmp(pass);
+		serverpass = tmp;
+	} 
 	void ServerInit(); 
 	void SerSocket(); 
 	void AcceptNewClient(); 
-	void ReceiveNewData(int fd); 
+	void ReceiveNewData(int fd, Client&); 
 	static void SignalHandler(int signum); 
-
 	void CloseFds(); 
 	void ClearClients(int fd); 
+
+	Client& get_client(int, std::vector<Client>);
 };
 
 

@@ -32,25 +32,30 @@ void	Server::CloseFds(){
 	}
 }
 
-void Server::ReceiveNewData(int fd)
+void Server::ReceiveNewData(int fd, Client& cli)
 {
 	//em caso de merda, veridicar de novo o fd que ta sendo mandado
+	if (cli.GetFd() == SerSocketFd)
+		std::cout << "deu ruim para localizar o cliente" << std::endl;
 
-	char buff[1024]; //-> buffer for the received data
-	memset(buff, 0, sizeof(buff)); //-> clear the buffer
+	
+	char buff[1024];
+	memset(buff, 0, sizeof(buff)); //-> clear the buffer to received data
 
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); //-> receive the data
 
-	if(bytes <= 0){ //-> check if the client disconnected
+	std::string in = buff;
+
+	if(bytes <= 0){ //-> -1 o read deu merda
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		ClearClients(fd); 
-		close(fd); //-> close client socket
+		close(fd); // close specific client fd
 	}
 	else{
+		if (in.find("\r\n") == std::string::npos){ 
+			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
+		}
 		
-		buff[bytes] = '\0';
-		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << buff;
-		//asds
 	}
 }
 
@@ -109,11 +114,25 @@ void Server::SerSocket()
 	fds.push_back(NewPoll); //-> add the server socket to the pollfd
 }
 
+Client& Server::get_client(int fd, std::vector<Client> cli){
+
+	/*std::vector<Client>::iterator it = std::find(cli.begin(), cli.end(), fd);
+	if (it != cli.end())
+		return *it;
+	else
+		return cli[0];*/
+	
+	for (unsigned int i = 0 ; i < cli.size() ; i++){
+		if (fd == cli[i].GetFd())
+			return cli[i];
+	}
+	return cli[0];
+}
+
 void Server::ServerInit()
 {
-	this->Port = 4444;
+	
 	SerSocket(); //-> create the server socket
-
 	std::cout << GRE << "Server <" << SerSocketFd << "> Connected" << WHI << std::endl;
 	std::cout << "Waiting to accept a connection...\n";
 
@@ -127,7 +146,7 @@ void Server::ServerInit()
 				if (fds[i].fd == SerSocketFd)
 					AcceptNewClient();
 				else
-					ReceiveNewData(fds[i].fd); 
+					ReceiveNewData(fds[i].fd, get_client(fds[i].fd, clients)); 
 			}
 		}
 	}
@@ -140,15 +159,3 @@ void Server::ServerInit()
  short   revents; //-> returned events
 };*/
 
-/*struct pollfd { cl1
- int     fd; //-> file descriptor
- short   events;//-> requested events
- short   revents = 1 ;//-> returned events
-};*/
-
-
-/*struct pollfd { cl2
- int     fd; //-> file descriptor
- short   events;//-> requested events
- short   revents = 1 ;//-> returned events
-};*/

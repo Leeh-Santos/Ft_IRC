@@ -11,7 +11,7 @@ private:
     int Fd; //-> client file descriptor
     std::string IPadd; //-> client ip address
 
-    std::string buffer;
+    std::string _buffer;
     std::string pass;
     std::string nick;
     std::string user;
