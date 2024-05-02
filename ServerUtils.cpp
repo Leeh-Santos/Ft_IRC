@@ -16,11 +16,43 @@ void Server::validate_cli(Client& cli){
     }
 }
 
-void Server::registration(std::string str, Client& cli){
+std::vector<std::string> tokenit_please(std::string str){
+    std::string sentence = str;
 
+    std::istringstream iss(sentence);
+    std::vector<std::string> tokens;
+    std::string token;
+
+    while (std::getline(iss, token, ' ')) {
+        tokens.push_back(token);
+    }
+    //PRINT TOKENS TO VERIFY AFTER
+    return tokens;
+}
+
+void Server::registration(std::string str, Client& cli){
+    //talvez so foda se o arrombado ficar enviando CAP pelo nc e olhe lá, pode dar ruim na pass no compare
     if (str.find("CAP") != std::string::npos){
-        std::cout << "CAP" << std::endl;
-        //outro bagulho
+        std::cout << "CAP function sallve" << std::endl;
+        std::vector<std::string> cap_tken_receiver = tokenit_please(str);
+        std::vector<std::string>::iterator it = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "PASS"); 
+        std::string pass_str = *++it;
+        if(!pass_str.compare(serverpass)){
+            if (cli.get_bool_pass()){
+            std::cout << "Already registered" << std::endl;
+            return;
+            }
+            cli.set_bool_pass(1);
+            std::cout << "correct password!" << std::endl;
+        }
+        std::vector<std::string>::iterator it1 = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "NICK"); 
+        cli.set_nick(*++it1);
+        std::cout << " nick added :" << cli.get_nick() << std::endl;
+        std::vector<std::string>::iterator it2 = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "USER");
+        cli.set_user(*++it2);
+        std::cout << " user added :" << cli.get_user() << std::endl;
+        //oque eu faco com o resto que vem do CAP USER XXXXX  * realname??
+
     }
     else if (str.find("pass") != std::string::npos){
         std::cout << " entrou pass" << std::endl;
@@ -59,8 +91,8 @@ void Server::registration(std::string str, Client& cli){
     }
 
 
-    std::cout << "CLIENT INFO " << std::endl;
+    /*std::cout << "CLIENT INFO " << std::endl;
     std::cout << "CLIENT user :" << cli.get_user() <<std::endl;
     std::cout << "CLIENT nick :" << cli.get_nick() <<std::endl;
-    std::cout << "CLIENT pass :" << cli.get_bool_pass() <<std::endl;
+    std::cout << "CLIENT pass :" << cli.get_bool_pass() <<std::endl;*/
 }
