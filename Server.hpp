@@ -52,9 +52,18 @@ public:
 	void CloseFds(); 
 	void ClearClients(int fd); 
 
-	Client& get_client(int, std::vector<Client>);
+	Client& get_client(int, std::vector<Client>&);
 	void registration(std::string, Client&);
+
+	void validate_cli(Client&);
+
+	void client_sender(int fd, std::string str){
+	if(send(fd, str.c_str(), str.size(), 0) == -1)
+		std::cerr << "not able to send data" << std::endl;	
+}
 };
+
+
 
 
 # endif

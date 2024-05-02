@@ -34,7 +34,7 @@ void	Server::CloseFds(){
 
 void Server::ReceiveNewData(int fd, Client &cli)
 {
-	//em caso de merda, veridicar de novo o fd que ta sendo mandado
+	
 	if (cli.GetFd() == SerSocketFd)
 		std::cout << "deu ruim para localizar o cliente" << std::endl;
 
@@ -53,17 +53,17 @@ void Server::ReceiveNewData(int fd, Client &cli)
 		if (!cli.is_verified()){
 			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos){
 				registration(in, cli);
-				//still missing ;
-				// check all valitation vars if is ok, bool to 1
+				validate_cli(cli);
 			}
 			else
-				std::cout << "you need to verify first" << std::endl; 
+				std::cout << "you need to verify first" << std::endl;
+				client_sender(cli.GetFd(), "you need to verify first\n");
 		}
-		else{
+		/*else{
 			if (in.find("\r\n") == std::string::npos){
 
 			}
-		}
+		}*/
 		}
 
 }
@@ -127,7 +127,7 @@ void Server::SerSocket()
 	fds.push_back(NewPoll); //-> add the server socket to the pollfd
 }
 
-Client& Server::get_client(int fd, std::vector<Client> cli){
+Client& Server::get_client(int fd, std::vector<Client>& cli){
 
 	/*std::vector<Client>::iterator it = std::find(cli.begin(), cli.end(), fd);
 	if (it != cli.end())
@@ -144,7 +144,7 @@ Client& Server::get_client(int fd, std::vector<Client> cli){
 
 void Server::ServerInit()
 {
-	
+	std::cout << "Server Password :" << serverpass << std::endl;
 	SerSocket(); //-> create the server socket
 	std::cout << GRE << "Server <" << SerSocketFd << "> Connected" << WHI << std::endl;
 	std::cout << "Waiting to accept a connection...\n";

@@ -17,7 +17,6 @@ private:
     bool pass;
     std::string nick;
     std::string user;
-
     bool verified;
 
 public:
@@ -33,9 +32,9 @@ public:
     void set_nick(std::string str);
     std::string get_nick();
     void set_user(std::string str);
-    std::string Client::get_user();
-    void Client::set_bool_pass(int x);
-    int Client::get_bool_pass();
+    std::string get_user();
+    void set_bool_pass(int x);
+    int get_bool_pass();
 };
 
 //# endif
