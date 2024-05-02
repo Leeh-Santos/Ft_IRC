@@ -35,6 +35,6 @@ int main(int argc, char *argv[])
         ser.CloseFds(); 
         std::cerr << e.what() << std::endl;
     }
-    std::cout << "The Server Closed!" << std::endl;
+    std::cout << "The Server Closed! See you next time!" << std::endl;
 
 }

@@ -1,9 +1,11 @@
-//#pragma once
+#pragma once
 
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+//#ifndef CLIENT_HPP
+//#define CLIENT_HPP
 # include "Server.hpp"
 # include <string>
+
+class Server;
 
 class Client
 {
@@ -12,7 +14,7 @@ private:
     std::string IPadd; //-> client ip address
 
     std::string _buffer;
-    std::string pass;
+    bool pass;
     std::string nick;
     std::string user;
 
@@ -23,11 +25,17 @@ public:
     int GetFd(){return Fd;} //-> getter for fd
     void SetFd(int fd){Fd = fd;} //-> setter for fd
     void setIpAdd(std::string ipadd){IPadd = ipadd;} //-> setter for ipadd
-    void set_verified(int);
 
+    void set_verified(int x);
     void add_buffer(std::string str);
     int is_verified();
-    
+
+    void set_nick(std::string str);
+    std::string get_nick();
+    void set_user(std::string str);
+    std::string Client::get_user();
+    void Client::set_bool_pass(int x);
+    int Client::get_bool_pass();
 };
 
-# endif
+//# endif

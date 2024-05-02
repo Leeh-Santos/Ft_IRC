@@ -32,18 +32,15 @@ void	Server::CloseFds(){
 	}
 }
 
-void Server::ReceiveNewData(int fd, Client cli)
+void Server::ReceiveNewData(int fd, Client &cli)
 {
 	//em caso de merda, veridicar de novo o fd que ta sendo mandado
 	if (cli.GetFd() == SerSocketFd)
 		std::cout << "deu ruim para localizar o cliente" << std::endl;
 
-	
 	char buff[1024];
 	memset(buff, 0, sizeof(buff)); //-> clear the buffer to received data
-
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); //-> receive the data
-
 	std::string in = buff;
 
 	if(bytes <= 0){ //-> -1 o read deu merda
@@ -52,18 +49,23 @@ void Server::ReceiveNewData(int fd, Client cli)
 		close(fd); // close specific client fd
 	}
 	else{
-		// CAP / pass 
 		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
-		if (cli.is_verified()){
-			if (in.find("\r\n") == std::string::npos){ 
+		if (!cli.is_verified()){
+			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos){
+				registration(in, cli);
+				//still missing ;
+				// check all valitation vars if is ok, bool to 1
+			}
+			else
+				std::cout << "you need to verify first" << std::endl; 
+		}
+		else{
+			if (in.find("\r\n") == std::string::npos){
+
 			}
 		}
-		else
-			std::cout << "you need to verify firts" << std::endl;
-			//if (!cli.pass)
-			//if (!cli.user)
-			// //if (!cli.pass) print msg 
 		}
+
 }
 
 void Server::AcceptNewClient()
@@ -87,6 +89,9 @@ void Server::AcceptNewClient()
 	cli.SetFd(incofd); //-> set the client file descriptor
 	cli.setIpAdd(inet_ntoa((cliadd.sin_addr))); //-> convert the ip address to string and set it
 	cli.set_verified(0);
+	cli.set_user("");
+	cli.set_bool_pass(0);
+	cli.set_nick("");
 
 	clients.push_back(cli); //-> add the client to the vector of clients
 	fds.push_back(NewPoll); //-> add the client socket to the pollfd
@@ -122,7 +127,7 @@ void Server::SerSocket()
 	fds.push_back(NewPoll); //-> add the server socket to the pollfd
 }
 
-Client Server::get_client(int fd, std::vector<Client> cli){
+Client& Server::get_client(int fd, std::vector<Client> cli){
 
 	/*std::vector<Client>::iterator it = std::find(cli.begin(), cli.end(), fd);
 	if (it != cli.end())
@@ -134,7 +139,7 @@ Client Server::get_client(int fd, std::vector<Client> cli){
 		if (fd == cli[i].GetFd())
 			return cli[i];
 	}
-	return cli[0];
+	return cli[0]; // just in case
 }
 
 void Server::ServerInit()
