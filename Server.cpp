@@ -51,15 +51,13 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	else{
 		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
 		if (!cli.is_verified()){
+			validate_cli(cli);
 			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos){
 				registration(in, cli);
-				if (in.find("CAP")) // ja vem bonitinho entao ja valido la mesmo, se nao fode a logica hehe
-					return ;
-				validate_cli(cli);
 			}
 			else{
 				std::cout << "you need to verify first" << std::endl;
-				client_sender(cli.GetFd(), "you need to verify first\n");
+				client_sender(cli.GetFd(), "You need to verify first Brother\n");
 			}
 		}
 		/*else{

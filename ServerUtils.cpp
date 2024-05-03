@@ -2,7 +2,9 @@
 # include "Client.hpp"
 
 void Server::validate_cli(Client& cli){
+
     if (cli.get_nick() == "" || cli.get_user() == "" || cli.get_bool_pass() == 0){
+        client_sender(cli.GetFd(), "YOUR REGISTRATION STATUS:\n");
         if (cli.get_nick() == "")
             client_sender(cli.GetFd(), "Nick is missing\n");
         if (cli.get_user() == "")
@@ -33,7 +35,6 @@ std::vector<std::string> tokenit_please(std::string str){
 void Server::registration(std::string str, Client& cli){
     //talvez so foda se o arrombado ficar enviando CAP pelo nc e olhe lá, pode dar ruim na pass no compare
     if (str.find("CAP") != std::string::npos){
-        std::cout << "CAP function sallve" << std::endl;
         std::vector<std::string> cap_tken_receiver = tokenit_please(str);
         std::vector<std::string>::iterator it = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "PASS"); 
         std::string pass_str = *++it;
@@ -60,14 +61,19 @@ void Server::registration(std::string str, Client& cli){
         str = str.substr(0, str.find('\n')); // nc sends /n nesse caralho
         if (cli.get_bool_pass()){
             std::cout << "Already registered" << std::endl;
+            client_sender(cli.GetFd(), "Already registered\n");
             return;
         }
         else if (!str.compare(serverpass)){
             cli.set_bool_pass(1);
-            std::cout << "correct password! dont forget to register too" << std::endl;
+            std::cout << "correct password!" << std::endl;
+            client_sender(cli.GetFd(), "correct password!\n");
         }
-        else
+        else{
             std::cout << "Wrong password" << std::endl;
+            client_sender(cli.GetFd(), "Wrong password\n");
+        }
+    
     }
     else if (str.find("nick") != std::string::npos){
         std::cout << " entrou nick" << std::endl;
@@ -78,6 +84,7 @@ void Server::registration(std::string str, Client& cli){
             return;
         cli.set_nick(str);
         std::cout << "Nick setted succesfully to :" << cli.get_nick() << std::endl;
+        client_sender(cli.GetFd(), "Nick setted succesfully to :" + str + '\n');
     }
     else if (str.find("user") != std::string::npos){
         std::cout << " entrou user" << std::endl;
@@ -88,6 +95,7 @@ void Server::registration(std::string str, Client& cli){
             return;
         cli.set_user(str);
         std::cout << "user setted succesfully to :" << cli.get_user() << std::endl;
+        client_sender(cli.GetFd(), "user setted succesfully to :" + str + '\n');
     }
 
 
