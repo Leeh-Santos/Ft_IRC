@@ -26,7 +26,8 @@ public:
     void setIpAdd(std::string ipadd){IPadd = ipadd;} //-> setter for ipadd
 
     void set_verified(int x);
-    void add_buffer(std::string str);
+    void set_buffer(std::string str);
+    std::string get_buffer();
     int is_verified();
 
     void set_nick(std::string str);

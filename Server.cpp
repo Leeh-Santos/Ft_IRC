@@ -50,10 +50,10 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	}
 	else{
 		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
-		if (!cli.is_verified()){
-			validate_cli(cli);
+		if (!cli.is_verified()){ //enquanto a flag nao tiver on fica aqui,
+			validate_cli(cli); //checar se as vars estao fixe, o arrombado vai ter que ficar mandando "CAP, nick, user, pass ate ficar belezinha"
 			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos){
-				registration(in, cli);
+				registration(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj 
 			}
 			else{
 				std::cout << "you need to verify first" << std::endl;
@@ -71,7 +71,7 @@ void Server::ReceiveNewData(int fd, Client &cli)
 
 void Server::AcceptNewClient()
 {
-	Client cli; //-> create a new client
+	Client cli; //-> create a new client, dava para jogar isso tudo num constructor mas foda-se, norminete é o caralho, constructor = AcceptNewClient() 
 	struct sockaddr_in cliadd;
 	struct pollfd NewPoll;
 	socklen_t len = sizeof(cliadd);
@@ -93,6 +93,7 @@ void Server::AcceptNewClient()
 	cli.set_user("");
 	cli.set_bool_pass(0);
 	cli.set_nick("");
+	cli.set_buffer("");
 
 	clients.push_back(cli); //-> add the client to the vector of clients
 	fds.push_back(NewPoll); //-> add the client socket to the pollfd
@@ -160,7 +161,7 @@ void Server::ServerInit()
 				if (fds[i].fd == SerSocketFd)
 					AcceptNewClient();
 				else
-					ReceiveNewData(fds[i].fd, get_client(fds[i].fd, clients)); 
+					ReceiveNewData(fds[i].fd, get_client(fds[i].fd, clients)); //get_client devolve o cliente obj para modificarmos
 			}
 		}
 	}

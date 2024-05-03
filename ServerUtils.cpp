@@ -90,7 +90,7 @@ void Server::registration(std::string str, Client& cli){
         std::cout << " entrou user" << std::endl;
         str = str.substr(str.find_first_not_of("user "));
         str = str.substr(0, str.find('\n'));
-        //check other nicks
+        //check other nicks function
         if(str.empty())
             return;
         cli.set_user(str);
