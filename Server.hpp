@@ -61,9 +61,8 @@ public:
 	void client_sender(int fd, std::string str){
 	if(send(fd, str.c_str(), str.size(), 0) == -1)
 		std::cerr << "not able to send data" << std::endl;
-		
+	}	
 	std::vector<std::string> tokenit_please(std::string str);
-}
 };
 
 

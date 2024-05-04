@@ -48,10 +48,9 @@ void Server::ReceiveNewData(int fd, Client &cli)
 		ClearClients(fd); 
 		close(fd); // close specific client fd
 	}
-	else{
-		std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
-		if (!cli.is_verified()){ //enquanto a flag nao tiver on fica aqui,
-			validate_cli(cli); //checar se as vars estao fixe, o arrombado vai ter que ficar mandando "CAP, nick, user, pass ate ficar belezinha"
+	else if (!cli.is_verified()){//enquanto a flag nao tiver on, fica travado aqui
+			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
+			validate_cli(cli); //essa funcao verifica se as vars estao fixe, o arrombado vai ter que ficar mandando "CAP, nick, user, pass ate ficar belezinha"
 			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos){
 				registration(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj 
 			}
@@ -60,12 +59,17 @@ void Server::ReceiveNewData(int fd, Client &cli)
 				client_sender(cli.GetFd(), "You need to verify first Brother\n");
 			}
 		}
-		/*else{
-			if (in.find("\r\n") == std::string::npos){
-
-			}
-		}*/
+	else if (in.find("\r\n") == std::string::npos){ // se vem do nc commando
+			cli.set_buffer(in.substr(0, in.find_first_of('\n'))); //porque ta vindo com \n aqui, manda oque o gajo mandou ate o \n
+			client_sender(cli.GetFd(), "messege received not from hexchat, added to buffer: " + in);
 		}
+	else { // verificar como ta chegando string pelo hexchat
+		std::vector<std::string> buffer_token = tokenit_please(cli.get_buffer() + in.substr(0, in.find_first_of('\n')));
+		if (buffer_token.empty())
+			return ; // se ficar apertando enter que nem um retardado
+		//check command() function?		
+	}
+	
 
 }
 

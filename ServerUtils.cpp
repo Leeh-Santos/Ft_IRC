@@ -4,7 +4,7 @@
 void Server::validate_cli(Client& cli){
 
     if (cli.get_nick() == "" || cli.get_user() == "" || cli.get_bool_pass() == 0){
-        client_sender(cli.GetFd(), "YOUR REGISTRATION STATUS:\n");
+        client_sender(cli.GetFd(), "YOUR REGISTRATION STATUS SO FAR:\n");
         if (cli.get_nick() == "")
             client_sender(cli.GetFd(), "Nick is missing\n");
         if (cli.get_user() == "")
@@ -18,7 +18,7 @@ void Server::validate_cli(Client& cli){
     }
 }
 
-std::vector<std::string> tokenit_please(std::string str){
+std::vector<std::string> Server::tokenit_please(std::string str){
     std::string sentence = str;
 
     std::istringstream iss(sentence);
