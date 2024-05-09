@@ -42,29 +42,38 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	memset(buff, 0, sizeof(buff)); //-> clear the buffer to received data
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); //-> receive the data
 	std::string in = buff;
+	std::cout << "string received in general :" << in << std::endl; 
+	exit(1);
 
-	if(bytes <= 0){ //-> -1 o read deu merda
+	if(bytes <= 0){
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		ClearClients(fd); 
-		close(fd); // close specific client fd
+		close(fd); 
 	}
-	else if (!cli.is_verified()){//enquanto a flag nao tiver on, fica travado aqui
+
+
+	else if (!cli.is_verified()){
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
-			validate_cli(cli); //essa funcao verifica se as vars estao fixe, o arrombado vai ter que ficar mandando "CAP, nick, user, pass ate ficar belezinha"
-			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos){
-				registration(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj 
+			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos || in.find("PASS") != std::string::npos){
+				registration(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj
+				validate_cli(cli);
 			}
 			else{
-				std::cout << "you need to verify first" << std::endl;
+				std::cout << "you need to verify first Brother" << std::endl;
 				client_sender(cli.GetFd(), "You need to verify first Brother\n");
 			}
 		}
+
+
+
 	else if (in.find("\r\n") == std::string::npos){ // se vem do nc commando
+			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
 			cli.set_buffer(in.substr(0, in.find_first_of('\n'))); //porque ta vindo com \n aqui, manda oque o gajo mandou ate o \n
 			client_sender(cli.GetFd(), "messege received not from hexchat, added to buffer: " + in);
 		}
 	else { // verificar como ta chegando string pelo hexchat
 		std::vector<std::string> buffer_token = tokenit_please(cli.get_buffer() + in.substr(0, in.find_first_of('\n')));
+		std::cout << "recebido por hex chat" << std::endl; 
 		if (buffer_token.empty())
 			return ; // se ficar apertando enter que nem um retardado
 		//check command() function?		
@@ -134,12 +143,6 @@ void Server::SerSocket()
 }
 
 Client& Server::get_client(int fd, std::vector<Client>& cli){
-
-	/*std::vector<Client>::iterator it = std::find(cli.begin(), cli.end(), fd);
-	if (it != cli.end())
-		return *it;
-	else
-		return cli[0];*/
 	
 	for (unsigned int i = 0 ; i < cli.size() ; i++){
 		if (fd == cli[i].GetFd())
@@ -162,7 +165,7 @@ void Server::ServerInit()
 
 		for (size_t i = 0; i < fds.size(); i++){ //-> check all file descriptors
 			if (fds[i].revents & POLLIN){ //-> check if there is data to read
-				if (fds[i].fd == SerSocketFd)
+				if (fds[i].fd == SerSocketFd) // se alteracao foi no fd do server entao so aceitamos
 					AcceptNewClient();
 				else
 					ReceiveNewData(fds[i].fd, get_client(fds[i].fd, clients)); //get_client devolve o cliente obj para modificarmos

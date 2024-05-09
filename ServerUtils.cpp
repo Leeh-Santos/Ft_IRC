@@ -12,7 +12,7 @@ void Server::validate_cli(Client& cli){
         if (cli.get_bool_pass() == 0)
             client_sender(cli.GetFd(), "Password is missing\n");
     }
-    else{
+    else if (cli.get_nick() != "" && cli.get_user() != "" && cli.get_bool_pass() != 0) {
         cli.set_verified(1);
         client_sender(cli.GetFd(), "Welcome to IRC SERVER meu Parceiro\n");
     }
@@ -25,7 +25,7 @@ std::vector<std::string> Server::tokenit_please(std::string str){
     std::vector<std::string> tokens;
     std::string token;
 
-    while (std::getline(iss, token, ' ')) {
+    while (std::getline(iss, token, ' ') || std::getline(iss, token, '\n') || std::getline(iss, token, '\r')) {
         tokens.push_back(token);
     }
     //PRINT TOKENS TO VERIFY AFTER
@@ -34,10 +34,24 @@ std::vector<std::string> Server::tokenit_please(std::string str){
 
 void Server::registration(std::string str, Client& cli){
     //talvez so foda se o arrombado ficar enviando CAP pelo nc e olhe lá, pode dar ruim na pass no compare
-    if (str.find("CAP") != std::string::npos){
+    if (str.find("CAP") != std::string::npos || str.find("PASS") != std::string::npos){
         std::vector<std::string> cap_tken_receiver = tokenit_please(str);
+
+        std::vector<std::string>::iterator i = cap_tken_receiver.begin();
+        std::cout << "size of tokens : " << cap_tken_receiver.size() << std::endl;
+        std::cout << "tokens : ";
+        while (i != cap_tken_receiver.end()){
+            std::cout << *i << " ";
+            i++;
+        }
+        if (cap_tken_receiver.size() <= 4){
+            std::cout << "retornou" << std::endl;
+            return ; // in case hexchat devide cap 
+        }
+
         std::vector<std::string>::iterator it = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "PASS"); 
         std::string pass_str = *++it;
+        std::cout << " explodiu aqui " << std::endl; 
         if(!pass_str.compare(serverpass)){
             if (cli.get_bool_pass()){
             std::cout << "Already registered" << std::endl;
@@ -46,6 +60,7 @@ void Server::registration(std::string str, Client& cli){
             cli.set_bool_pass(1);
             std::cout << "correct password!" << std::endl;
         }
+        
         std::vector<std::string>::iterator it1 = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "NICK"); 
         cli.set_nick(*++it1);
         std::cout << " nick added :" << cli.get_nick() << std::endl;

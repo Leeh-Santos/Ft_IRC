@@ -1,0 +1,17 @@
+
+send back to client hexchat/nc
+CAP LS 302\r\n
+PASS a\r\n
+USER user\r\n
+NICK a\r\n
+
+
+testar sigpipe
+
+
+
+RAW LOG
+
+JOIN #a -- RECEBE COM ASTERISCO
+
+:learodri!learodri@AN-A795207B.226.108.93.rev.vodafone.pt JOIN #a * :realname  -- mandar no formado para o fdc loiente 
