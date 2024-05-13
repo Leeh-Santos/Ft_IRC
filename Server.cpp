@@ -52,20 +52,19 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	}
 
 
-	else if (!cli.is_verified()){
+	else if (!cli.is_verified()){ //travamos o gajo ate estiver ok!
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
-			if(in.find("CAP") != std::string::npos || in.find("pass") != std::string::npos || in.find("nick") != std::string::npos || in.find("user") != std::string::npos || in.find("PASS") != std::string::npos){
+			if(in.find("\r\n")){
+				//handle cap
 				registration(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj
-				validate_cli(cli);
 			}
 			else{
+				//hande nc, watch the /n
 				std::cout << "you need to verify first Brother" << std::endl;
 				client_sender(cli.GetFd(), "You need to verify first Brother\n");
 			}
+			validate_cli(cli);
 		}
-
-
-
 	else if (in.find("\r\n") == std::string::npos){ // se vem do nc commando
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
 			cli.set_buffer(in.substr(0, in.find_first_of('\n'))); //porque ta vindo com \n aqui, manda oque o gajo mandou ate o \n
@@ -73,7 +72,7 @@ void Server::ReceiveNewData(int fd, Client &cli)
 		}
 	else { // verificar como ta chegando string pelo hexchat
 		std::vector<std::string> buffer_token = tokenit_please(cli.get_buffer() + in.substr(0, in.find_first_of('\n')));
-		std::cout << "recebido por hex chat" << std::endl; 
+		std::cout << "client " << fd << "recebido por hexchat : " << in << std::endl; 
 		if (buffer_token.empty())
 			return ; // se ficar apertando enter que nem um retardado
 		//check command() function?		

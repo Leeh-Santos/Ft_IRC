@@ -19,16 +19,16 @@ void Server::validate_cli(Client& cli){
 }
 
 std::vector<std::string> Server::tokenit_please(std::string str){
-    std::string sentence = str;
-
-    std::istringstream iss(sentence);
     std::vector<std::string> tokens;
+    std::istringstream iss(str);
     std::string token;
 
-    while (std::getline(iss, token, ' ') || std::getline(iss, token, '\n') || std::getline(iss, token, '\r')) {
-        tokens.push_back(token);
+    // Tokenize by space and "\r\n"
+    while (std::getline(iss, token, ' ') || std::getline(iss, token, '\r')) {
+        if (!token.empty() && token != "\n") {
+            tokens.push_back(token);
+        }
     }
-    //PRINT TOKENS TO VERIFY AFTER
     return tokens;
 }
 
