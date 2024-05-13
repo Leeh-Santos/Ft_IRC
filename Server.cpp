@@ -42,28 +42,25 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	memset(buff, 0, sizeof(buff)); //-> clear the buffer to received data
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); //-> receive the data
 	std::string in = buff;
-	std::cout << "string received in general :" << in << std::endl; 
-	exit(1);
+	std::cout << "string received in general :" << in; //ja ta vindo com \n ou \r\n
+
 
 	if(bytes <= 0){
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		ClearClients(fd); 
 		close(fd); 
 	}
-
-
 	else if (!cli.is_verified()){ //travamos o gajo ate estiver ok!
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
-			if(in.find("\r\n")){
-				//handle cap
-				registration(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj
+			if(in.find("\r\n") != std::string::npos){
+				handle_cap(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj
 			}
 			else{
-				//hande nc, watch the /n
-				std::cout << "you need to verify first Brother" << std::endl;
-				client_sender(cli.GetFd(), "You need to verify first Brother\n");
+				handle_nc(in, cli);
+				std::cout << "you need to verify first Brother, usage: pass/nick/user 'input'" << std::endl;
+				client_sender(cli.GetFd(), "\nyou need to verify first Brother, usage: pass/nick/user 'input'\n");
 			}
-			validate_cli(cli);
+			validate_cli(cli); //verifica se ta tudo fixe para modificar o is_verified
 		}
 	else if (in.find("\r\n") == std::string::npos){ // se vem do nc commando
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
@@ -71,10 +68,8 @@ void Server::ReceiveNewData(int fd, Client &cli)
 			client_sender(cli.GetFd(), "messege received not from hexchat, added to buffer: " + in);
 		}
 	else { // verificar como ta chegando string pelo hexchat
-		std::vector<std::string> buffer_token = tokenit_please(cli.get_buffer() + in.substr(0, in.find_first_of('\n')));
-		std::cout << "client " << fd << "recebido por hexchat : " << in << std::endl; 
-		if (buffer_token.empty())
-			return ; // se ficar apertando enter que nem um retardado
+		std::cout << YEL << "Client by HEXCHAT<" << fd << "> Data: " << WHI << in;
+		 // se ficar apertando enter que nem um retardado
 		//check command() function?		
 	}
 	

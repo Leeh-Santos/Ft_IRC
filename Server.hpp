@@ -54,15 +54,16 @@ public:
 	void ClearClients(int fd); 
 
 	Client& get_client(int, std::vector<Client>&);
-	void registration(std::string, Client&);
+	void handle_cap(std::string str, Client& cli);
+	void handle_nc(std::string str, Client& cli);
 
 	void validate_cli(Client&);
 
 	void client_sender(int fd, std::string str){
 	if(send(fd, str.c_str(), str.size(), 0) == -1)
 		std::cerr << "not able to send data" << std::endl;
-	}	
-	std::vector<std::string> tokenit_please(std::string str);
+	}
+	std::vector<std::string> tokenit_please(std::string str, int x);
 };
 
 
