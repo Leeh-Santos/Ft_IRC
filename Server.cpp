@@ -72,7 +72,6 @@ void Server::ReceiveNewData(int fd, Client &cli)
 		if (cli_str.empty())
 			return;
 		cmd_execute(cli_str, cli);
-
 		 // se ficar apertando enter que nem um retardado
 		 //fazer comandos para PASS USER E NICK DENOVO, PASS E USER PARA ALREADY REGISTERED, nick para trocar outra vez, nao esquecer de fazer o announce
 		//check command() function?		
@@ -144,7 +143,7 @@ void Server::SerSocket()
 Client& Server::get_client(int fd, std::vector<Client>& cli){
 	
 	for (unsigned int i = 0 ; i < cli.size() ; i++){
-		if (fd == cli[i].GetFd())
+		if (fd 	== cli[i].GetFd())
 			return cli[i];
 	}
 	return cli[0]; // just in case
@@ -175,7 +174,7 @@ void Server::ServerInit()
 }
 
 /*struct pollfd { server 
- int     fd; //-> file descriptor
+ int	fd; //-> file descriptor
  short   events;//-> requested events
  short   revents; //-> returned events
 };*/
