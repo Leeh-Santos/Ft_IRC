@@ -9,9 +9,9 @@ class Channel {
 
 private:
 	std::string				_channelName;
-	std::vector<Client*>	_clients;
-	std::vector<Client*>	_invited;
-	std::string				_operators;
+	std::vector<Client>	_clients;
+	std::vector<Client>	_invited;
+	std::string				_operator;
 	//MODES
 	bool					_inviteOnlyChannelMode;	//"+i" controls whether new users need to be invited to the channel before being able to join
 	bool					_topicMode;				//"+t" controls whether channel privileges are required to set the topic

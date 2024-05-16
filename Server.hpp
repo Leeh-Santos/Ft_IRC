@@ -3,6 +3,7 @@
 #define SERVER_HPP 
 
 # include "Client.hpp"
+# include "Channel.hpp"
 
 #include <iostream>
 #include <vector> //-> for vector
@@ -36,7 +37,7 @@ private:
 	static bool Signal; 
 	std::vector<Client> clients; 
 	std::vector<struct pollfd> fds; 
-	
+	std::vector<Channel> channels;
 	std::string serverpass;
 public:
 	Server(int port, char *pass){
@@ -67,8 +68,11 @@ public:
 
 	std::vector<std::string> tokenit_please(std::string str, int x);
 	bool verify_nicks(std::string str);
+
+	//commands
 	void cmd_execute(std::string cli_str,Client& cli);
 	void change_nick(std::string cli_str,Client& cli);
+	void join_cmd(std::string, Client&);
 
 	std::string str_cutter(std::string);
 };

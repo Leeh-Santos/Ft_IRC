@@ -10,6 +10,8 @@ void Server::cmd_execute(std::string cli_str, Client& cli){
 		client_sender(cli.GetFd(), ":Server 462 Already registered");
 	else if (first_word == "nick" || first_word == "NICK")
 		change_nick(cli_str, cli);
+	else if (first_word == "join" || first_word == "JOIN")
+		join_cmd(cli_str, cli);
 	else
 		std::cout << "first word: " << first_word << "/ string inteira :" << cli_str << std::endl;
 
@@ -41,4 +43,13 @@ std::string Server::str_cutter(std::string str){
 	else
 		str = str.substr(0, str.find("\n"));
 	return str;
-}   
+}
+
+void Server::join_cmd(std::string cmd_line, Client& cli){ //watch out with /r/n  join #asdasdas /r/n 
+	std::vector<std::string> cmd = tokenit_please(cmd_line, 1);
+	std::vector<std::string>::iterator it  = std::find(cmd.begin(), cmd.end(), '#');
+	if (it == cmd.end()){
+		//fazer clint_sender com mensajemde error
+		return;
+	}
+}
