@@ -2,6 +2,7 @@ SRCS		= main.cpp \
 			Server.cpp \
 			Client.cpp \
 			ServerUtils.cpp \
+			commands.cpp \
 			
 OBJS		= $(SRCS:.cpp=.o)
 

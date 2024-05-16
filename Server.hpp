@@ -56,17 +56,21 @@ public:
 	Client& get_client(int, std::vector<Client>&);
 	void handle_cap(std::string str, Client& cli);
 	void handle_nc(std::string str, Client& cli);
-
 	void validate_cli(Client&);
 
 	void client_sender(int fd, std::string str){
+	str += "\r\n";
 	if(send(fd, str.c_str(), str.size(), 0) == -1)
 		std::cerr << "not able to send data" << std::endl;
+	std::cout << str; //print in the server side to see what is going on 
 	}
+
 	std::vector<std::string> tokenit_please(std::string str, int x);
+	bool verify_nicks(std::string str);
+	void cmd_execute(std::string cli_str,Client& cli);
+	void change_nick(std::string cli_str,Client& cli);
+
+	std::string str_cutter(std::string);
 };
-
-
-
 
 # endif

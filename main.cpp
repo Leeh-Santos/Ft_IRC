@@ -6,8 +6,10 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
-    if (argc != 3)
+    if (argc != 3){
         std::cout << "wrong usage meu parceiro, it goes like: ./irc <port> <server-pass>" << std::endl;
+        exit(1);
+    }
 
     int i = 0;
     while (argv[1][i]){
@@ -25,7 +27,7 @@ int main(int argc, char *argv[])
     }
     Server ser(port, argv[2]);
     
-    std::cout << "---- SERVER IN ONLINE EVERYONE  ----" << std::endl;
+    std::cout << "---- SERVER IS ONLINE EVERYONE  ----" << std::endl;
     try{
         signal(SIGINT, Server::SignalHandler);
         signal(SIGQUIT, Server::SignalHandler); 

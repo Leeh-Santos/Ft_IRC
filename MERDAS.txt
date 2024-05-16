@@ -1,17 +1,12 @@
 
-send back to client hexchat/nc
-CAP LS 302\r\n
-PASS a\r\n
-USER user\r\n
-NICK a\r\n
-
-
-testar sigpipe
-
-
-
-RAW LOG
-
 JOIN #a -- RECEBE COM ASTERISCO
 
-:learodri!learodri@AN-A795207B.226.108.93.rev.vodafone.pt JOIN #a * :realname  -- mandar no formado para o fdc loiente 
+:learodri!learodri@AN-A795207B.226.108.93.rev.vodafone.pt JOIN #a * :realname  -- mandar no formado para o fdc loiente  **esse arroba acho que é para mudar alguma merda
+
+olhar as mensagens do pass nick e user vindo do server
+
+questions :
+pare que serve o 0 * realname?
+se o fdp faz errado o cap, que vces fazem?
+formato da msg de atualizacao do hex?
+testar com o CAP cagadp

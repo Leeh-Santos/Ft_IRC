@@ -53,23 +53,28 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	else if (!cli.is_verified()){ //travamos o gajo ate estiver ok!
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
 			if(in.find("\r\n") != std::string::npos){
-				handle_cap(in, cli); // ve oque o babaca mandou, passing e set das vars do cliente obj
+				handle_cap(in, cli);
 			}
 			else{
 				handle_nc(in, cli);
-				std::cout << "you need to verify first Brother, usage: pass/nick/user 'input'" << std::endl;
 				client_sender(cli.GetFd(), "\nyou need to verify first Brother, usage: pass/nick/user 'input'\n");
 			}
 			validate_cli(cli); //verifica se ta tudo fixe para modificar o is_verified
 		}
 	else if (in.find("\r\n") == std::string::npos){ // se vem do nc commando
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
-			cli.set_buffer(in.substr(0, in.find_first_of('\n'))); //porque ta vindo com \n aqui, manda oque o gajo mandou ate o \n
+			cli.set_buffer(in.substr(0, in.find_first_of('\n')));
 			client_sender(cli.GetFd(), "messege received not from hexchat, added to buffer: " + in);
 		}
 	else { // verificar como ta chegando string pelo hexchat
 		std::cout << YEL << "Client by HEXCHAT<" << fd << "> Data: " << WHI << in;
+		std::string cli_str = cli.get_buffer() + in; //ta vindo com \r\n aqui cuidado
+		if (cli_str.empty())
+			return;
+		cmd_execute(cli_str, cli);
+
 		 // se ficar apertando enter que nem um retardado
+		 //fazer comandos para PASS USER E NICK DENOVO, PASS E USER PARA ALREADY REGISTERED, nick para trocar outra vez, nao esquecer de fazer o announce
 		//check command() function?		
 	}
 	
