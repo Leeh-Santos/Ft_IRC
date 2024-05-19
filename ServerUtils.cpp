@@ -10,7 +10,7 @@ void Server::validate_cli(Client& cli){
 		if (cli.get_user() == "")
 			client_sender(cli.GetFd(), "User is missing");
 		if (cli.get_bool_pass() == 0)
-			client_sender(cli.GetFd(), "Password is missing"); 
+			client_sender(cli.GetFd(), "Password is missing");
 		client_sender(cli.GetFd(), "if you are using hexchat, please restart app with correct parameters Nick name/User name/Password");
 	}
 	else if (cli.get_nick() != "" && cli.get_user() != "" && cli.get_bool_pass() != 0) {
@@ -31,16 +31,16 @@ std::vector<std::string> Server::tokenit_please(std::string str, int x){
 					tokens.push_back(token);
 					token.clear();
 				}
-			} else { 
+			} else {
 				token += str[i];
 			}
 		}
 		if (!token.empty()) {
 			tokens.push_back(token);
 		}
-	} 
-	 else{ // for /n and spaces 
-		while (std::getline(iss, token, ' ')) 
+	}
+	 else{ // for /n and spaces
+		while (std::getline(iss, token, ' '))
 			   tokens.push_back(token);
 	}
 
@@ -51,7 +51,7 @@ std::vector<std::string> Server::tokenit_please(std::string str, int x){
 void Server::handle_cap(std::string str, Client& cli){
 
 	std::vector<std::string> cap_tken_receiver = tokenit_please(str, 1);
-   
+
 	std::vector<std::string>::iterator it = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "PASS");
 	if (it != cap_tken_receiver.end()){
 		std::string pass_str = *++it;
@@ -96,7 +96,6 @@ void Server::handle_cap(std::string str, Client& cli){
 		std::cout << *i << " ";
 		i++;
 	}*/
-	
 
 }
 void Server::handle_nc(std::string str, Client& cli){
@@ -133,7 +132,6 @@ void Server::handle_nc(std::string str, Client& cli){
 	std::cout << "CLIENT pass :" << cli.get_bool_pass() <<std::endl;*/
 }
 
-
 bool Server::verify_nicks(std::string str){
 	for(unsigned int i = 0; i < clients.size(); i++){
 		if (!str.compare(clients[i].get_nick()))
@@ -141,3 +139,19 @@ bool Server::verify_nicks(std::string str){
 	}
 	return 0;
 }
+
+int sendIrcMessage(int clientFd, std::string message) {
+	message = message + "\r\n";
+	std::cout << "Sendind to client ID, " << clientFd << ": " << message << std::endl;
+	if (send(clientFd, message.c_str(), message.length(), 0) < 0) {
+		std::cout << "Error sending message to client" << std::endl;
+		exit(1);
+	}
+	message.clear();
+	return (0);
+}
+
+//SETTERS AND GETTERS
+std::vector<Channel>& Server::getChannels() {return channels;}
+
+//void Server::setChannels(const std::vector<Channel>& newChannels) {channels = newChannels;}

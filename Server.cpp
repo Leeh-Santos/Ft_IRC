@@ -2,23 +2,23 @@
 # include "Client.hpp"
 
 void Server::ClearClients(int fd){ //-> clear the clients
-	for(size_t i = 0; i < fds.size(); i++){ 
+	for(size_t i = 0; i < fds.size(); i++){
 		if (fds[i].fd == fd)
 			{fds.erase(fds.begin() + i); break;}
 	}
-	for(size_t i = 0; i < clients.size(); i++){ 
+	for(size_t i = 0; i < clients.size(); i++){
 		if (clients[i].GetFd() == fd)
 			{clients.erase(clients.begin() + i); break;}
 	}
 
 }
 
-bool Server::Signal = false; 
+bool Server::Signal = false;
 void Server::SignalHandler(int signum)
 {
 	(void)signum;
 	std::cout << std::endl << "Signal Received! Ending server now" << std::endl;
-	Server::Signal = true; 
+	Server::Signal = true;
 }
 
 void	Server::CloseFds(){
@@ -34,7 +34,7 @@ void	Server::CloseFds(){
 
 void Server::ReceiveNewData(int fd, Client &cli)
 {
-	
+
 	if (cli.GetFd() == SerSocketFd)
 		std::cout << "deu ruim para localizar o cliente" << std::endl;
 
@@ -47,8 +47,8 @@ void Server::ReceiveNewData(int fd, Client &cli)
 
 	if(bytes <= 0){
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
-		ClearClients(fd); 
-		close(fd); 
+		ClearClients(fd);
+		close(fd);
 	}
 	else if (!cli.is_verified()){ //travamos o gajo ate estiver ok!
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
@@ -74,15 +74,15 @@ void Server::ReceiveNewData(int fd, Client &cli)
 		cmd_execute(cli_str, cli);
 		 // se ficar apertando enter que nem um retardado
 		 //fazer comandos para PASS USER E NICK DENOVO, PASS E USER PARA ALREADY REGISTERED, nick para trocar outra vez, nao esquecer de fazer o announce
-		//check command() function?		
+		//check command() function?
 	}
-	
+
 
 }
 
 void Server::AcceptNewClient()
 {
-	Client cli; //-> create a new client, dava para jogar isso tudo num constructor mas foda-se, norminete é o caralho, constructor = AcceptNewClient() 
+	Client cli; //-> create a new client, dava para jogar isso tudo num constructor mas foda-se, norminete é o caralho, constructor = AcceptNewClient()
 	struct sockaddr_in cliadd;
 	struct pollfd NewPoll;
 	socklen_t len = sizeof(cliadd);
@@ -141,7 +141,7 @@ void Server::SerSocket()
 }
 
 Client& Server::get_client(int fd, std::vector<Client>& cli){
-	
+
 	for (unsigned int i = 0 ; i < cli.size() ; i++){
 		if (fd 	== cli[i].GetFd())
 			return cli[i];
@@ -156,9 +156,9 @@ void Server::ServerInit()
 	std::cout << GRE << "Server <" << SerSocketFd << "> Connected" << WHI << std::endl;
 	std::cout << "Waiting to accept a connection...\n";
 
-	while (Server::Signal == false){ 
+	while (Server::Signal == false){
 
-		if((poll(&fds[0],fds.size(),-1) == -1) && Server::Signal == false) 
+		if((poll(&fds[0],fds.size(),-1) == -1) && Server::Signal == false)
 			throw(std::runtime_error("poll() fail"));
 
 		for (size_t i = 0; i < fds.size(); i++){ //-> check all file descriptors
@@ -173,7 +173,7 @@ void Server::ServerInit()
 	CloseFds();
 }
 
-/*struct pollfd { server 
+/*struct pollfd { server
  int	fd; //-> file descriptor
  short   events;//-> requested events
  short   revents; //-> returned events
