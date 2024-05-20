@@ -14,10 +14,10 @@ private:
 	std::string IPadd; //-> client ip address
 
 	std::string _buffer;
-	bool _pass;
 	std::string _nick;
 	std::string _user;
-	bool _verified;
+	bool		_verified;
+	bool		_pass;
 
 public:
 	Client(){}; //-> default constructor

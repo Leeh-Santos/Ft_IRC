@@ -1,7 +1,7 @@
 # include "Server.hpp"
 # include "Client.hpp"
 
-void Server::cmd_execute(std::string cli_str, Client& cli){
+void Server::cmd_execute(std::string cli_str, Client& cli) {
 	std::string first_word = cli_str.substr(0, cli_str.find(' '));
 
 	if (first_word == "pass" || first_word == "PASS")
@@ -47,51 +47,61 @@ std::string Server::str_cutter(std::string str){
 
 //JOIN COMMAND
 
-void	Server::joinChannel(Client& cli,std::string channelName) {
-	//JoinChannel
+void	Server::joinChannel(Client& cli, std::string channelName) {
+ channels->add
+}
+
+void	Server::checkPassJoinOrReturn(std::vector<Channel>::iterator it, Client& cli, std::string channelName, std::string pass)
+{
+	if (!it->getchannelPass().empty()) {		//Se ha pass
+		if (pass == it->getchannelPass())			//E se pass correcta
+			joinChannel(cli, channelName);
+		else {											//Se pass e esta incorrecta
+			sendIrcMessage(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + channelName + " :Bad channel password");
+			return ;
+		}
+	}
+	else										//Se nao ha pass
+		joinChannel(cli, channelName);
 }
 
 void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n  join #asdasdas /r/n
 	std::vector<std::string> cmd = tokenit_please(cmd_line, 1);
+
 	if (cmd.size() < 2) {
 		sendIrcMessage(cli.GetFd(), ":@localhost 461 " + cli.get_nick() + " JOIN :Not enough parameters\n");
 		return;
 	}
-		std::string channelName = cmd[1];
-	//if (!cmd[2].empty())
-		std::string passUser = cmd[2];
-	if (channelName[0] != '#') { //se não começar por #, primeiro char
+
+	std::string channelName = cmd[1];
+	std::string  pass = cmd[2];
+
+	if (channelName[0] != '#') { // Se não começar por #, primeiro char
 		sendIrcMessage(cli.GetFd(), ":@localhost 403" + cli.get_nick() + " " + cmd[1] + " No such channel\n");
 		return;
 	}
-	std::vector<Channel>::iterator it = std::find(channels.begin(), channels.end(), channelName); //Falta considerar se pass estiver desligado
-	if (it != channels.end()) { 	//channel exist
-		if (it->getInviteOnlyChannelMode() && !it->getkeyChannelModeAndValue().empty()) { //se invite mode ON e se tem password
-			std::vector<Client>::iterator itInvite = std::find(it->getInvitedClientsList().begin(), it->getInvitedClientsList().end(), cli.get_nick());
-			if (itInvite != it->getInvitedClientsList().end()) { //Se esta na lista
-				if (passUser == it->getkeyChannelModeAndValue()) //E se pass correcta
-					joinChannel(cli, channelName);
-				else { //se pass incorrecta
-					sendIrcMessage(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + channelName + " :Bad channel password");
-					return ;
-				}
-			}
-			else { // Se nao esta na lista
+
+	std::vector<Channel>::iterator it = std::find(channels.begin(), channels.end(), channelName);
+	// Se esse canal tiver limiteMode ligado (limite de quantidade de clients no canal) e superior
+	if (it->getClientLimitChannelModeAndValue() && it->getClientsList().size() >= it->getClientLimitChannelModeAndValue()) {
+		sendIrcMessage(cli.GetFd(), ":@localhost 471 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+l)");
+		return ;
+	}
+
+	if (it != channels.end()) {			//IF CHANNEL EXIST
+		if (it->getInviteOnlyChannelMode()) {	//ON, invite mode
+			std::vector<Client>::iterator itInvite = std::find(it->getInvCliList().begin(), it->getInvCliList().end(), cli.get_nick());
+			if (itInvite != it->getInvCliList().end())	//Se client esta na lista
+				checkPassJoinOrReturn(it, cli, channelName, pass);
+			else										//Se nao esta na lista
 				sendIrcMessage(cli.GetFd(), ":@localhost 473 " + cli.get_nick() + " " + channelName + " :Invite only channel");
-			}
 		}
-		//se esse canal tiver limiteMode ligado (limite de quantidade de clients no canal) e superior
-		if (it->getClientLimitChannelModeAndValue() && it->getClientsList().size() >= it->getClientLimitChannelModeAndValue()) {
-			sendIrcMessage(cli.GetFd(), ":@localhost 471 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+l)");
-			return ;
-		}
+		else 									//OFF invite mode
+			checkPassJoinOrReturn(it, cli, channelName, pass);
 	}
-
-	else {	//channel does not exist
-
+	else {								//IF CHANNEL DOES NOT EXIST, create it
+		this->channels.push_back(Channel(channelName));
+		sendChannelMessage( ":" + cli->getNick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
+		sendIrcMessage(":@localhost 332 " + cli->getNick() + " " + channelName + " :No topic is set", cli->get_user());
 	}
-
-
-
-
 }

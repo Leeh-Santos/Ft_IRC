@@ -12,13 +12,13 @@ class Channel {
 private:
 	std::string				_channelName;
 	std::vector<Client>		_clientsList;
-	std::vector<Client>		_invitedClientsList;
+	std::vector<Client>		_InvCliList;
 	std::string				_operator;
 	//MODES
 	bool					_inviteOnlyChannelMode;	//"+i" controls whether new users need to be invited to the channel before being able to join
 	bool					_topicMode;				//"+t" controls whether channel privileges are required to set the topic
 	std::string				_topic;
-	std::string				_keyChannelModeAndValue;		//"+k" sets a ‘key’ that must be supplied in order to join this channel
+	std::string				_channelPass;		//"+k" sets a ‘key’ that must be supplied in order to join this channel
 	int						_clientLimitChannelModeAndValue;//"+l" controls whether new users may join based on the number of users who already exist
 
 public:
@@ -31,12 +31,12 @@ public:
 	//SETTERS E GETTERS
 	std::string 		getChannelName() const;
 	std::vector<Client> getClientsList() const;
-	std::vector<Client> getInvitedClientsList() const;
+	std::vector<Client> getInvCliList() const;
 	std::string			getOperator() const;
 	bool				getInviteOnlyChannelMode() const;
 	bool				getTopicMode() const;
 	std::string			getTopic() const;
-	std::string			getkeyChannelModeAndValue() const;
+	std::string			getchannelPass() const;
 	int					getClientLimitChannelModeAndValue() const; // if = 0 mode off, if > 0 is value of the limit
 };
 

@@ -5,7 +5,7 @@ Channel::Channel() {
 
 Channel::Channel(std::string name){
 	_channelName = name;
-	_keyChannelModeAndValue = "";
+	_channelPass = "";
 	_topic = "";
 	_topicMode = 0;
 	_inviteOnlyChannelMode = 0;
@@ -27,7 +27,7 @@ std::string			Channel::getChannelName() const {return _channelName;}
 
 std::vector<Client> Channel::getClientsList() const {return _clientsList;}
 
-std::vector<Client> Channel::getInvitedClientsList() const {return _invitedClientsList;}
+std::vector<Client> Channel::getInvCliList() const {return _InvCliList;}
 
 std::string			Channel::getOperator() const {return _operator;}
 
@@ -37,7 +37,7 @@ bool				Channel::getTopicMode() const {return _topicMode;}
 
 std::string			Channel::getTopic() const {return _topic;}
 
-std::string			Channel::getkeyChannelModeAndValue() const {return _keyChannelModeAndValue;}
+std::string			Channel::getchannelPass() const {return _channelPass;}
 
 int					Channel::getClientLimitChannelModeAndValue() const {return _clientLimitChannelModeAndValue;}
 

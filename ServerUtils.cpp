@@ -148,7 +148,12 @@ int sendIrcMessage(int clientFd, std::string message) {
 		exit(1);
 	}
 	message.clear();
-	return (0);
+}
+
+void	sendChannelMessage(std::vector<Client> clients, std::string message) {
+	std::vector<Client>::iterator it;
+	for (it = clients.begin(); it < clients.end(); ++it)
+		sendIrcMessage((it)->GetFd(), message);
 }
 
 //SETTERS AND GETTERS

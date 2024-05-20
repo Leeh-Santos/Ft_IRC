@@ -47,13 +47,13 @@ public:
 		std::string tmp(pass);
 		serverpass = tmp;
 	}
-	void ServerInit();
-	void SerSocket();
-	void AcceptNewClient();
-	void ReceiveNewData(int fd, Client&);
-	static void SignalHandler(int signum);
-	void CloseFds();
-	void ClearClients(int fd);
+	void		ServerInit();
+	void		SerSocket();
+	void		AcceptNewClient();
+	void		ReceiveNewData(int fd, Client&);
+	static void	SignalHandler(int signum);
+	void		CloseFds();
+	void		ClearClients(int fd);
 
 	void client_sender(int fd, std::string str){
 	str += "\r\n";
@@ -63,27 +63,28 @@ public:
 	}
 
 	//COMMANDS
-	void cmd_execute(std::string cli_str,Client& cli);
-	void change_nick(std::string cli_str,Client& cli);
-		//JOIN
-		void	Server::joinChannel(Client& cli,std::string channelName);
-		bool channelNameEquals(const Channel& channel, const std::string& name);
-		void join_cmd(std::string, Client&);
+	void		cmd_execute(std::string cli_str, Client& cli);
+	void		change_nick(std::string cli_str,Client& cli);
+	//JOIN
+	void		checkPassJoinOrReturn(std::vector<Channel>::iterator it, Client& cli, std::string channelName, std::string pass);
+	void		joinChannel(Client& cli, std::string channelName);
+	bool		channelNameEquals(const Channel& channel, const std::string& name);
+	void		join_cmd(std::string cmd_line, Client& cli);
 
-	std::string str_cutter(std::string);
+	std::string	str_cutter(std::string);
 
 	//ServerUtils
-	void handle_cap(std::string str, Client& cli);
-	void handle_nc(std::string str, Client& cli);
-	void validate_cli(Client&);
+	void		handle_cap(std::string str, Client& cli);
+	void		handle_nc(std::string str, Client& cli);
+	void		validate_cli(Client&);
 	std::vector<std::string> tokenit_please(std::string str, int x);
-	bool verify_nicks(std::string str);
-	int sendIrcMessage(int clientFd, std::string message);
+	bool		verify_nicks(std::string str);
+	void		sendIrcMessage(int clientFd, std::string message);
+	int			sendChannelMessage(std::vector<Client*> clients, std::string message);
 
 	//GETTERS AND SETTERS
 	Client& get_client(int, std::vector<Client>&);
 	std::vector<Channel>& getChannels();
 	//void Server::setChannels(const std::vector<Channel>& newChannels);
 };
-
 # endif
