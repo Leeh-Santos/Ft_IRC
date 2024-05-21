@@ -66,8 +66,8 @@ public:
 	void		cmd_execute(std::string cli_str, Client& cli);
 	void		change_nick(std::string cli_str,Client& cli);
 	//JOIN
-	void		checkPassJoinOrReturn(std::vector<Channel>::iterator it, Client& cli, std::string channelName, std::string pass);
-	void		joinChannel(std::vector<Channel>::iterator channel, Client& cli, std::string channelName);
+	void		checkPassJoinOrReturn(int i, Client& cli, std::string channelName, std::string pass);
+	void		joinChannel(int i, Client& cli, std::string channelName);
 	bool		channelNameEquals(const Channel& channel, const std::string& name);
 	void		join_cmd(std::string cmd_line, Client& cli);
 

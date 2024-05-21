@@ -47,24 +47,24 @@ std::string Server::str_cutter(std::string str){
 
 //JOIN COMMAND
 
-void	Server::joinChannel(std::vector<Channel>::iterator channel, Client& cli, std::string channelName) {
-	channel->addClient(cli);
-	sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :" + channel->getTopic());
-	sendlMsgToChannel(channel->getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
+void	Server::joinChannel(int i, Client& cli, std::string channelName) {
+	_channels[i].addClient(cli);
+	sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :" + _channels[i].getTopic());
+	sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
 }
 
-void	Server::checkPassJoinOrReturn(std::vector<Channel>::iterator it, Client& cli, std::string channelName, std::string pass)
+void	Server::checkPassJoinOrReturn(int i, Client& cli, std::string channelName, std::string pass)
 {
-	if (!it->getchannelPass().empty()) {		//Se ha pass
-		if (pass == it->getchannelPass())			//E se pass correcta
-			joinChannel(it, cli, channelName);
+	if (_channels[i].getchannelPass().empty()) {		//Se ha pass
+		if (pass == _channels[i].getchannelPass())			//E se pass correcta
+			joinChannel(i, cli, channelName);
 		else {											//Se pass e esta incorrecta
 			sendMsgToClient(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + channelName + " :Bad channel password");
 			return ;
 		}
 	}
 	else										//Se nao ha pass
-		joinChannel(it, cli, channelName);
+		joinChannel(i, cli, channelName);
 }
 
 void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n  join #asdasdas /r/n
@@ -78,33 +78,50 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 	std::string channelName = cmd[1];
 	std::string  pass = cmd[2];
 
+	//std::vector<Channel>::iterator it = std::find(_channels.begin(), _channels.end(), channelName);
+	unsigned int i = 0;
+	int flag_channelname = 0;
+	int flag_nickfound = 0;
+	for (; i <_channels.size() ; i++){
+		if (_channels[i].getChannelName() == channelName){
+			flag_channelname++;
+			break;
+		}
+	}
+
 	if (channelName[0] != '#') { // Se não começar por #, primeiro char
-		sendMsgToClient(cli.GetFd(), ":@localhost 403" + cli.get_nick() + " " + cmd[1] + " No such channel\n");
+		sendMsgToClient(cli.GetFd(), ":@localhost 403 " + cli.get_nick() + " " + cmd[1] + " No such channel\n");
 		return;
 	}
 
-	std::vector<Channel>::iterator it = std::find(_channels.begin(), _channels.end(), channelName);
-	// Se esse canal tiver limiteMode ligado (limite de quantidade de clients no canal) e superior
-	if (it->getClientLimitChannelModeAndValue() && it->getClientsList().size() >= (size_t)it->getClientLimitChannelModeAndValue()) {
-		sendMsgToClient(cli.GetFd(), ":@localhost 471 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+l)");
-		return ;
-	}
 
-	if (it != _channels.end()) {			//IF CHANNEL EXIST
-		if (it->getInviteOnlyChannelMode()) {	//ON, invite mode
-			std::vector<Client>::iterator itInvite = std::find(it->getInvCliList().begin(), it->getInvCliList().end(), cli.get_nick());
-			if (itInvite != it->getInvCliList().end())	//Se client esta na lista
-				checkPassJoinOrReturn(it, cli, channelName, pass);
-			else										//Se nao esta na lista
+	// Se esse canal tiver limiteMode ligado (limite de quantidade de clients no canal) e superior
+	if (flag_channelname){
+		if (_channels[i].getClientLimitChannelModeAndValue() && _channels[i].getClientsList().size() >= (size_t)_channels[i].getClientLimitChannelModeAndValue()) {
+			sendMsgToClient(cli.GetFd(), ":@localhost 471 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+l)");
+			return ;
+		}
+		if (_channels[i].getInviteOnlyChannelMode()) {	//ON, invite mode
+		
+			unsigned int x = 0;
+			for (; _channels[i].getInvCliList().size() ; x++){
+				if (_channels[i].getInvCliList()[x].get_nick() == cli.get_nick()){
+					flag_nickfound++;
+					break;
+				}
+			}
+			if (flag_nickfound)	
+				checkPassJoinOrReturn(i, cli, channelName, pass);
+			else										
 				sendMsgToClient(cli.GetFd(), ":@localhost 473 " + cli.get_nick() + " " + channelName + " :Invite only channel");
 		}
 		else 									//OFF invite mode
-			checkPassJoinOrReturn(it, cli, channelName, pass);
+			checkPassJoinOrReturn(i, cli, channelName, pass);
 	}
 	else {								//IF CHANNEL DOES NOT EXIST, create it
 		this->_channels.push_back(Channel(channelName));
 		Channel& newChannel = _channels.back();
-		sendlMsgToChannel(newChannel.getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
-		sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :No topic is set");
+		sendlMsgToChannel(newChannel.getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName + "\r\n");
+		sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :No topic is set" + "\r\n");
 	}
 }
