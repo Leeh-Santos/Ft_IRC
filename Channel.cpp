@@ -11,7 +11,7 @@ Channel::Channel(std::string name){
 	_inviteOnlyChannelMode = 0;
 	_clientLimitChannelModeAndValue = 0;
 	std::cout << "Channel created with id: " << name << std::endl;
-	//Server::addChannel(name);
+	//addChannel(name);
 }
 
 Channel::~Channel() {

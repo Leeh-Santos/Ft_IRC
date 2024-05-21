@@ -55,7 +55,7 @@ void Server::handle_cap(std::string str, Client& cli){
 	std::vector<std::string>::iterator it = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "PASS");
 	if (it != cap_tken_receiver.end()){
 		std::string pass_str = *++it;
-		if(!pass_str.compare(serverpass)){
+		if(!pass_str.compare(_serverPass)){
 			if (cli.get_bool_pass()){
 				client_sender(cli.GetFd(), ":Server 462 Already registered");
 				return;
@@ -106,7 +106,7 @@ void Server::handle_nc(std::string str, Client& cli){
 				client_sender(cli.GetFd(), ":Server 462 Already registered");
 				return;
 			}
-			else if (!str.compare(serverpass)){
+			else if (!str.compare(_serverPass)){
 				cli.set_bool_pass(1);
 				client_sender(cli.GetFd(), ":Server correct password!");
 			}
@@ -133,14 +133,14 @@ void Server::handle_nc(std::string str, Client& cli){
 }
 
 bool Server::verify_nicks(std::string str){
-	for(unsigned int i = 0; i < clients.size(); i++){
-		if (!str.compare(clients[i].get_nick()))
+	for(unsigned int i = 0; i < _clients.size(); i++){
+		if (!str.compare(_clients[i].get_nick()))
 			return 1;
 	}
 	return 0;
 }
 
-int sendIrcMessage(int clientFd, std::string message) {
+void Server::sendMsgToClient(int clientFd, std::string message) {
 	message = message + "\r\n";
 	std::cout << "Sendind to client ID, " << clientFd << ": " << message << std::endl;
 	if (send(clientFd, message.c_str(), message.length(), 0) < 0) {
@@ -150,13 +150,13 @@ int sendIrcMessage(int clientFd, std::string message) {
 	message.clear();
 }
 
-void	sendChannelMessage(std::vector<Client> clients, std::string message) {
+void	Server::sendlMsgToChannel(std::vector<Client> clientsList, std::string message) {
 	std::vector<Client>::iterator it;
-	for (it = clients.begin(); it < clients.end(); ++it)
-		sendIrcMessage((it)->GetFd(), message);
+	for (it = clientsList.begin(); it < clientsList.end(); ++it)
+		sendMsgToClient((it)->GetFd(), message);
 }
 
 //SETTERS AND GETTERS
-std::vector<Channel>& Server::getChannels() {return channels;}
+std::vector<Channel>& Server::getChannels() {return _channels;}
 
 //void Server::setChannels(const std::vector<Channel>& newChannels) {channels = newChannels;}

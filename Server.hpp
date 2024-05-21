@@ -33,24 +33,24 @@ class Channel;
 class Server
 {
 private:
-	int Port; //-> server port
-	int SerSocketFd; //-> server fd
-	static bool Signal;
-	std::vector<Client> clients;
-	std::vector<struct pollfd> fds;
-	std::vector<Channel> channels;
-	std::string serverpass;
+	int							_port; //-> server port
+	int							_serSocketFd; //-> server fd
+	static bool					_signal;
+	std::vector<Client>			_clients;
+	std::vector<struct pollfd>	_fds;
+	std::vector<Channel>		_channels;
+	std::string					_serverPass;
 public:
 	Server(int port, char *pass){
-		SerSocketFd = -1;
-		Port = port;
+		_serSocketFd = -1;
+		_port = port;
 		std::string tmp(pass);
-		serverpass = tmp;
+		_serverPass = tmp;
 	}
 	void		ServerInit();
 	void		SerSocket();
 	void		AcceptNewClient();
-	void		ReceiveNewData(int fd, Client&);
+	void		ReceiveNewData(int fd, Client& cli);
 	static void	SignalHandler(int signum);
 	void		CloseFds();
 	void		ClearClients(int fd);
@@ -67,7 +67,7 @@ public:
 	void		change_nick(std::string cli_str,Client& cli);
 	//JOIN
 	void		checkPassJoinOrReturn(std::vector<Channel>::iterator it, Client& cli, std::string channelName, std::string pass);
-	void		joinChannel(Client& cli, std::string channelName);
+	void		joinChannel(std::vector<Channel>::iterator channel, Client& cli, std::string channelName);
 	bool		channelNameEquals(const Channel& channel, const std::string& name);
 	void		join_cmd(std::string cmd_line, Client& cli);
 
@@ -79,11 +79,11 @@ public:
 	void		validate_cli(Client&);
 	std::vector<std::string> tokenit_please(std::string str, int x);
 	bool		verify_nicks(std::string str);
-	void		sendIrcMessage(int clientFd, std::string message);
-	int			sendChannelMessage(std::vector<Client*> clients, std::string message);
+	void		sendMsgToClient(int clientFd, std::string message);
+	void		sendlMsgToChannel(std::vector<Client> clientsList, std::string message);
 
 	//GETTERS AND SETTERS
-	Client& get_client(int, std::vector<Client>&);
+	Client& get_client(int fd, std::vector<Client>&);
 	std::vector<Channel>& getChannels();
 	//void Server::setChannels(const std::vector<Channel>& newChannels);
 };

@@ -2,40 +2,40 @@
 # include "Client.hpp"
 
 void Server::ClearClients(int fd){ //-> clear the clients
-	for(size_t i = 0; i < fds.size(); i++){
-		if (fds[i].fd == fd)
-			{fds.erase(fds.begin() + i); break;}
+	for(size_t i = 0; i < _fds.size(); i++){
+		if (_fds[i].fd == fd)
+			{_fds.erase(_fds.begin() + i); break;}
 	}
-	for(size_t i = 0; i < clients.size(); i++){
-		if (clients[i].GetFd() == fd)
-			{clients.erase(clients.begin() + i); break;}
+	for(size_t i = 0; i < _clients.size(); i++){
+		if (_clients[i].GetFd() == fd)
+			{_clients.erase(_clients.begin() + i); break;}
 	}
 
 }
 
-bool Server::Signal = false;
+bool Server::_signal = false;
 void Server::SignalHandler(int signum)
 {
 	(void)signum;
 	std::cout << std::endl << "Signal Received! Ending server now" << std::endl;
-	Server::Signal = true;
+	Server::_signal = true;
 }
 
 void	Server::CloseFds(){
-	for(size_t i = 0; i < clients.size(); i++){ //-> close all the clients
-		std::cout << RED << "Client <" << clients[i].GetFd() << "> Disconnected" << WHI << std::endl;
-		close(clients[i].GetFd());
+	for(size_t i = 0; i < _clients.size(); i++){ //-> close all the clients
+		std::cout << RED << "Client <" << _clients[i].GetFd() << "> Disconnected" << WHI << std::endl;
+		close(_clients[i].GetFd());
 	}
-	if (SerSocketFd != -1){ //-> close the server socket
-		std::cout << RED << "Server <" << SerSocketFd << "> Disconnected" << WHI << std::endl;
-		close(SerSocketFd);
+	if (_serSocketFd != -1){ //-> close the server socket
+		std::cout << RED << "Server <" << _serSocketFd << "> Disconnected" << WHI << std::endl;
+		close(_serSocketFd);
 	}
 }
 
 void Server::ReceiveNewData(int fd, Client &cli)
 {
 
-	if (cli.GetFd() == SerSocketFd)
+	if (cli.GetFd() == _serSocketFd)
 		std::cout << "deu ruim para localizar o cliente" << std::endl;
 
 	char buff[1024];
@@ -87,7 +87,7 @@ void Server::AcceptNewClient()
 	struct pollfd NewPoll;
 	socklen_t len = sizeof(cliadd);
 
-	int incofd = accept(SerSocketFd, (sockaddr *)&(cliadd), &len); //-> accept the new client
+	int incofd = accept(_serSocketFd, (sockaddr *)&(cliadd), &len); //-> accept the new client
 	if (incofd == -1)
 		{std::cout << "accept() failed" << std::endl; return;}
 
@@ -106,8 +106,8 @@ void Server::AcceptNewClient()
 	cli.set_nick("");
 	cli.set_buffer("");
 
-	clients.push_back(cli); //-> add the client to the vector of clients
-	fds.push_back(NewPoll); //-> add the client socket to the pollfd
+	_clients.push_back(cli); //-> add the client to the vector of clients
+	_fds.push_back(NewPoll); //-> add the client socket to the pollfd
 
 	std::cout << GRE << "Client <" << incofd << "> Connected" << WHI << std::endl;
 }
@@ -119,25 +119,25 @@ void Server::SerSocket()
 	struct pollfd NewPoll;
 	add.sin_family = AF_INET; //->  ipv4
 	add.sin_addr.s_addr = INADDR_ANY; //-> set the address to any local machine address
-	add.sin_port = htons(this->Port); //-> convert the port to network byte order (big endian)
+	add.sin_port = htons(this->_port); //-> convert the port to network byte order (big endian)
 
-	SerSocketFd = socket(AF_INET, SOCK_STREAM, 0); //-> create the server socket
-	if(SerSocketFd == -1) //-> check if the socket is created
+	_serSocketFd = socket(AF_INET, SOCK_STREAM, 0); //-> create the server socket
+	if(_serSocketFd == -1) //-> check if the socket is created
 		throw(std::runtime_error("faild to create socket"));
 
-	if(setsockopt(SerSocketFd, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1) //-> set the socket option (SO_REUSEADDR) to reuse the address
+	if(setsockopt(_serSocketFd, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1) //-> set the socket option (SO_REUSEADDR) to reuse the address
 		throw(std::runtime_error("faild to set option (SO_REUSEADDR) on socket"));
-	if (fcntl(SerSocketFd, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
+	if (fcntl(_serSocketFd, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
 		throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
-	if (bind(SerSocketFd, (struct sockaddr *)&add, sizeof(add)) == -1) //-> bind the socket to the address
+	if (bind(_serSocketFd, (struct sockaddr *)&add, sizeof(add)) == -1) //-> bind the socket to the address
 		throw(std::runtime_error("faild to bind socket"));
-	if (listen(SerSocketFd, SOMAXCONN) == -1) //-> listen for incoming connections and making the socket a passive socket
+	if (listen(_serSocketFd, SOMAXCONN) == -1) //-> listen for incoming connections and making the socket a passive socket
 		throw(std::runtime_error("listen() faild"));
 
-	NewPoll.fd = SerSocketFd; //-> add the server socket to the pollfd
+	NewPoll.fd = _serSocketFd; //-> add the server socket to the pollfd
 	NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
 	NewPoll.revents = 0; //-> set the revents to 0
-	fds.push_back(NewPoll); //-> add the server socket to the pollfd
+	_fds.push_back(NewPoll); //-> add the server socket to the pollfd
 }
 
 Client& Server::get_client(int fd, std::vector<Client>& cli){
@@ -151,27 +151,29 @@ Client& Server::get_client(int fd, std::vector<Client>& cli){
 
 void Server::ServerInit()
 {
-	std::cout << "Server Password :" << serverpass << std::endl;
+	std::cout << "Server Password :" << _serverPass << std::endl;
 	SerSocket(); //-> create the server socket
-	std::cout << GRE << "Server <" << SerSocketFd << "> Connected" << WHI << std::endl;
+	std::cout << GRE << "Server <" << _serSocketFd << "> Connected" << WHI << std::endl;
 	std::cout << "Waiting to accept a connection...\n";
 
-	while (Server::Signal == false){
+	while (Server::_signal == false){
 
-		if((poll(&fds[0],fds.size(),-1) == -1) && Server::Signal == false)
+		if((poll(&_fds[0],_fds.size(),-1) == -1) && Server::_signal == false)
 			throw(std::runtime_error("poll() fail"));
 
-		for (size_t i = 0; i < fds.size(); i++){ //-> check all file descriptors
-			if (fds[i].revents & POLLIN){ //-> check if there is data to read
-				if (fds[i].fd == SerSocketFd) // se alteracao foi no fd do server entao so aceitamos
+		for (size_t i = 0; i < _fds.size(); i++){ //-> check all file descriptors
+			if (_fds[i].revents & POLLIN){ //-> check if there is data to read
+				if (_fds[i].fd == _serSocketFd) // se alteracao foi no fd do server entao so aceitamos
 					AcceptNewClient();
 				else
-					ReceiveNewData(fds[i].fd, get_client(fds[i].fd, clients)); //get_client devolve o cliente obj para modificarmos
+					ReceiveNewData(_fds[i].fd, get_client(_fds[i].fd, _clients)); //get_client devolve o cliente obj para modificarmos
 			}
 		}
 	}
 	CloseFds();
 }
+
+
 
 /*struct pollfd { server
  int	fd; //-> file descriptor
