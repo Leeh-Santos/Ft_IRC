@@ -3,13 +3,14 @@
 Channel::Channel() {
 	std::cout << "Channel stadard constructor called" << std::endl;}
 
-Channel::Channel(std::string name){
+Channel::Channel(std::string name){  //default mode: +t -i -k -l
 	_channelName = name;
 	_channelPass = "";
 	_topic = "";
 	_topicMode = 0;
 	_inviteOnlyChannelMode = 0;
 	_clientLimitChannelModeAndValue = 0;
+	_operator = "";
 	std::cout << "Channel created with id: " << name << std::endl;
 	//addChannel(name);
 }
@@ -40,4 +41,8 @@ std::string			Channel::getTopic() const {return _topic;}
 std::string			Channel::getchannelPass() const {return _channelPass;}
 
 int					Channel::getClientLimitChannelModeAndValue() const {return _clientLimitChannelModeAndValue;}
+
+void				Channel::setOperator(std::string op){
+	_operator = op;
+}
 

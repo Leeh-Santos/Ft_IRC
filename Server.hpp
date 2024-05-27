@@ -67,7 +67,7 @@ public:
 	void		change_nick(std::string cli_str,Client& cli);
 	//JOIN
 	void		checkPassJoinOrReturn(int i, Client& cli, std::string channelName, std::string pass);
-	void		joinChannel(int i, Client& cli, std::string channelName);
+	void		joinChannel(int i, Client& cli, std::string channelName, int flag);
 	bool		channelNameEquals(const Channel& channel, const std::string& name);
 	void		join_cmd(std::string cmd_line, Client& cli);
 
@@ -81,6 +81,11 @@ public:
 	bool		verify_nicks(std::string str);
 	void		sendMsgToClient(int clientFd, std::string message);
 	void		sendlMsgToChannel(std::vector<Client> clientsList, std::string message);
+
+	bool verify_channelName(std::string str, std::vector<std::string> cmd, Client& cli);
+	int channel_exists(std::string channelName);
+
+	int check_invite_list(int i, Client& cli);
 
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
