@@ -87,6 +87,8 @@ public:
 
 	int check_invite_list(int i, Client& cli);
 
+	int client_in_channel(std::string, int);
+
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
 	std::vector<Channel>& getChannels();
