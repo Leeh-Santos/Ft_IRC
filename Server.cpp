@@ -61,7 +61,7 @@ void Server::ReceiveNewData(int fd, Client &cli)
 			}
 			validate_cli(cli); //verifica se ta tudo fixe para modificar o is_verified
 		}
-	else if (in.find("\r\n") == std::string::npos){ // se vem do nc commando
+	else if (in.find("\n") == std::string::npos){ // se vem do nc commando
 			std::cout << YEL << "Client <" << fd << "> Data: " << WHI << in;
 			cli.set_buffer(in.substr(0, in.find_first_of('\n')));
 			client_sender(cli.GetFd(), "messege received not from hexchat, added to buffer: " + in);
@@ -181,3 +181,4 @@ void Server::ServerInit()
  short   revents; //-> returned events
 };*/
 
+	

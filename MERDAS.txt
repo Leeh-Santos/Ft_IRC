@@ -6,7 +6,13 @@ JOIN #a -- RECEBE COM ASTERISCO
 olhar as mensagens do pass nick e user vindo do server
 
 questions :
-pare que serve o 0 * realname?
-se o fdp faz errado o cap, que vces fazem?
-formato da msg de atualizacao do hex?
-testar com o CAP cagadp
+
+entrada do nc/entrada no hex 
+
+essa merda fica mandando mode#a e who#a 
+
+destructor called?
+
+entrou nc e entrou hex fudeu 
+
+mensagens de error tinham que apacer no canal?
