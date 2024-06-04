@@ -41,8 +41,8 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	char buff[1024];
 	memset(buff, 0, sizeof(buff)); //-> clear the buffer to received data
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); //-> receive the data
-	std::string in = buff;
-	std::cout << "string received :" << in; //ja ta vindo com \n ou \r\n
+	std::string in = buff; //ja ta vindo com \n ou \r\n
+	//std::cout << "string received ->  " << in; 
 
 
 	if(bytes <= 0){

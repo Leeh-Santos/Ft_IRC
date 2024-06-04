@@ -5,15 +5,17 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 	std::string first_word = cli_str.substr(0, cli_str.find(' '));
 
 	if (first_word == "pass" || first_word == "PASS")
-		client_sender(cli.GetFd(), ":Server 462 Already registered");
+		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + "!" + cli.get_user() + " Already registered");
 	else if (first_word == "user" || first_word == "USER")
-		client_sender(cli.GetFd(), ":Server 462 Already registered");
+		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + "!" + cli.get_user() + " Already registered");
 	else if (first_word == "nick" || first_word == "NICK")
 		change_nick(cli_str, cli);
 	else if (first_word == "join" || first_word == "JOIN")
 		join_cmd(cli_str, cli);
+	else if (first_word == "PRIVMSG" || first_word == "privmsg")
+		privmsg_cmd(cli_str, cli);
 	else{
-		client_sender(cli.GetFd(), (": 421 " + cli.get_nick() + " " + first_word + " unknown command"));
+		client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + " unknown command"));
 		std::cout << "first word: " << first_word << "||| string inteira :" << cli_str << std::endl;
 	}
 
@@ -23,7 +25,7 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 void Server::change_nick(std::string cli_str, Client& cli){
 	std::string nick = cli_str.substr(cli_str.find_first_not_of("nick "));
 	nick = str_cutter(nick); // limpar a string
-	if (verify_nicks(nick)){
+	if (verify_nicks(nick) != -1){
 		client_sender(cli.GetFd(), ":Server 433 Nick " + nick + " is already in use");
 		return;
 	}
@@ -78,6 +80,8 @@ void	Server::checkPassJoinOrReturn(int i, Client& cli, std::string channelName, 
 
 void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n  join #asdasdas /r/n /join #a
 	std::cout << " nao ta entrando" << std::endl;
+
+	//cuidado em pass var, para nao dar merda se so mandarem poucos args tipo /join #asdasd
 	std::vector<std::string> cmd = tokenit_please(cmd_line, 1);
 	std::string channelName = cmd[1];
 	std::string  pass = cmd[2];
@@ -118,6 +122,9 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 		else 									//OFF invite mode
 			checkPassJoinOrReturn(i, cli, channelName, pass);
 	}
+
+
+
 	for(unsigned int i = 0 ; i < _channels.size() ; i++)
 		std::cout << "nome do canal" << i << ": " << _channels[i].getChannelName() << std::endl;
 	} 
@@ -125,23 +132,58 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 bool Server::verify_channelName(std::string channelName, std::vector<std::string> cmd, Client& cli){
 
 	if (cmd.size() < 2) {
-		sendMsgToClient(cli.GetFd(), ":@localhost 461 " + cli.get_nick() + " JOIN :Not enough parameters\r\n");
+		sendMsgToClient(cli.GetFd(), ":461 " + cli.get_nick() + " JOIN :Not enough parameters");
 		return 0;
 	}else if (channelName[0] != '#') { // Se não começar por #, primeiro char
-		sendMsgToClient(cli.GetFd(), ":@localhost 403 " + cli.get_nick() + " " + cmd[1] + " No such channel\r\n");
+		sendMsgToClient(cli.GetFd(), ":403 " + cli.get_nick() + "!" + cli.get_user() + " " + cmd[1] + ": No such channel");
 		return 0;
 	}else if (channelName.size() == 1) {
-		sendMsgToClient(cli.GetFd(), ":@localhost 403 " + cli.get_nick() + " " + cmd[1] + " No such channel\n");
+		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + "!" + cli.get_user() + " " + cmd[1] + ": No such channel");
 		return 0;
 	}else if (channelName.size() > 50) {
-		sendMsgToClient(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + cmd[1] + " :Channel name too long\n");
+		//sendMsgToClient(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + cmd[1] + ": Channel name too long");
+		sendMsgToClient(cli.GetFd(), ":475 " + cli.get_nick() + "!" + cli.get_user() + " " + cmd[1] + ": Channel name too long");
 		return 0;
 	} else
 		return 1;
 }
 
+void 		Server::privmsg_cmd(std::string cli_str, Client& cli){
+
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	if(cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":localhost 461 " + cli.get_nick() + "Need more parameters");
+		return;
+	}
+	std::string target = cmd[1];
+	int chan_exists = channel_exists(target); //returns -1 if doesn't exist
+	int nick_exists = verify_nicks(target); //returns -1 if doesn't exist
+	std::string msg = get_full_msg(cmd, 2); //cuidado se vem menos strings
+
+	if (target[0] != '#'){ //then wants to send to a user no inside a channel
+		if(nick_exists == -1 || !_clients[nick_exists].is_verified()){
+			sendMsgToClient(cli.GetFd(), ":localhost 401 " + cli.get_nick() + " " + target + " :No such nick");
+			return;
+		}
+		else
+			sendMsgToClient(_clients[nick_exists].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + " " + msg);
+	}
+	else if(chan_exists == -1){
+		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + " " + target + " :No such channel");
+		return;
+	}
+	else if(!client_in_channel(cli.get_nick(), chan_exists)){
+		sendMsgToClient(cli.GetFd(), ":localhost 442 " + cli.get_nick() + " " + target + " :You're not on that channel");
+		return;
+	}
+	else
+		sendlMsgToChannel(_channels[chan_exists].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " " + msg);
+	
+}
+
 int Server::channel_exists(std::string channelName){
-	std::cout << " foi checado essa merda " << std::endl;
+	std::cout << " entrou channel_exists()" << std::endl;
 	unsigned int i = 0;
 	for (; i <_channels.size() ; i++){
 		if (_channels[i].getChannelName() == channelName)
@@ -167,10 +209,19 @@ int Server::client_in_channel(std::string cli_nick, int index){
 
 	unsigned int i = 0; 
 
-	for(; tmplist.size() ; i++){
+	for(; i < tmplist.size() ; i++){
 		if (tmplist[i].get_nick() == cli_nick)
 			return 1;
 	}
 	return 0;
 
+}
+
+std::string Server::get_full_msg(std::vector<std::string> cmd, int i){
+	unsigned int x = i;
+	std::string message = cmd[i];
+	i++;
+	for(; i < cmd.size() ; i++)
+		message += " " + cmd[i];
+	return message;
 }

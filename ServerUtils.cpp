@@ -68,7 +68,7 @@ void Server::handle_cap(std::string str, Client& cli){
 	std::vector<std::string>::iterator it1 = std::find(cap_tken_receiver.begin(), cap_tken_receiver.end(), "NICK");
 	if (it1 != cap_tken_receiver.end()){
 		std::string nicks = *++it1;
-		if (verify_nicks(nicks)){
+		if (verify_nicks(nicks) != -1){
 			client_sender(cli.GetFd(), ":Server 433 Nick " + str + " is already in use");
 			return;
 		}
@@ -115,7 +115,7 @@ void Server::handle_nc(std::string str, Client& cli){
 			}
 	}
 	else if (str.find("nick ") != std::string::npos){
-		change_nick(str, cli);
+			change_nick(str, cli);
 	}
 	else if (str.find("user ") != std::string::npos){
 		str = str.substr(str.find_first_not_of("user "));
@@ -132,12 +132,12 @@ void Server::handle_nc(std::string str, Client& cli){
 	std::cout << "CLIENT pass :" << cli.get_bool_pass() <<std::endl;*/
 }
 
-bool Server::verify_nicks(std::string str){
+int Server::verify_nicks(std::string str){
 	for(unsigned int i = 0; i < _clients.size(); i++){
 		if (!str.compare(_clients[i].get_nick()))
-			return 1;
+			return i;
 	}
-	return 0;
+	return -1;
 }
 
 void Server::sendMsgToClient(int clientFd, std::string message) {

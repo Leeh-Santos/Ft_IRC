@@ -70,6 +70,7 @@ public:
 	void		joinChannel(int i, Client& cli, std::string channelName, int flag);
 	bool		channelNameEquals(const Channel& channel, const std::string& name);
 	void		join_cmd(std::string cmd_line, Client& cli);
+	void 		privmsg_cmd(std::string cli_str, Client& cli);
 
 	std::string	str_cutter(std::string);
 
@@ -78,7 +79,7 @@ public:
 	void		handle_nc(std::string str, Client& cli);
 	void		validate_cli(Client&);
 	std::vector<std::string> tokenit_please(std::string str, int x);
-	bool		verify_nicks(std::string str);
+	int		verify_nicks(std::string str);
 	void		sendMsgToClient(int clientFd, std::string message);
 	void		sendlMsgToChannel(std::vector<Client> clientsList, std::string message);
 
@@ -88,6 +89,8 @@ public:
 	int check_invite_list(int i, Client& cli);
 
 	int client_in_channel(std::string, int);
+
+	std::string get_full_msg(std::vector<std::string> cmd, int i);
 
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);

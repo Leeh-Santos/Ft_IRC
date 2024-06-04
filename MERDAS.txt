@@ -7,12 +7,29 @@ olhar as mensagens do pass nick e user vindo do server
 
 questions :
 
-entrada do nc/entrada no hex 
+entrada do nc/entrada no hex   --> a entrada pelo nc com o /
 
-essa merda fica mandando mode#a e who#a 
+essa merda fica mandando MODE #a e WHO #a depois de c
 
 destructor called?
 
 entrou nc e entrou hex fudeu 
 
-mensagens de error tinham que apacer no canal?
+mensagens de error tinham que apacer no canal?-----------joga o exclamacao para funcionar, E SEM A POHA DO ARROBA, ARROBA joga no new network
+
+oque fazer com string recebida dentro do canal PRIVMSG? recebe como PRIVMSG #(nomedocanal) :(mensagen)
+
+MUST IMPLEMENT:
+
+trocou o nick oque faz depois?? NICK TEM QUE TROCAR NO HEX
+
+-quando entrar no canal:
+* Now talking on #a
+* Topic for #a is: 
+
+como tira o GARBAGE:?
+
+
+explodui ao mandar: PRIVMSG asdasd
+function msg to chanel ta enviado para o sender
+fazer funcao para pegar todas as strings restantes
