@@ -53,8 +53,10 @@ std::string Server::str_cutter(std::string str){
 
 void	Server::joinChannel(int i, Client& cli, std::string channelName, int adm_flag) {
 	_channels[i].addClient(cli);
-	sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :" + _channels[i].getTopic() + "\r\n");
-	sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName  + "\r\n");
+	//sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :" + _channels[i].getTopic());
+	//sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
+	sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + channelName + " :" + _channels[i].getTopic());
+	sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
 	if (adm_flag){
 		_channels[i].setOperator(cli.get_nick());
 		//sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName  + "\r\n");
@@ -96,7 +98,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 		this->_channels.push_back(Channel(channelName));//destructor called porque ta aparecendo aqui?
 		std::cout << " destructors sendo chamados agora: " << std::endl;
 		Channel& newChannel = _channels.back(); 
-		sendlMsgToChannel(newChannel.getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName + "\r\n");
+		sendlMsgToChannel(newChannel.getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
 		sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :No topic is set" + "\r\n");
 		joinChannel(_channels.size() - 1, cli, channelName, 1);
 	}
@@ -105,12 +107,12 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 		unsigned int i = channel_exists(channelName); //se tiver o canal channel_exists() devolve o index
 	
 		if (_channels[i].getClientLimitChannelModeAndValue() && _channels[i].getClientsList().size() >= (size_t)_channels[i].getClientLimitChannelModeAndValue()) {
-			sendMsgToClient(cli.GetFd(), ":@localhost 471 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+l)\r\n");
+			sendMsgToClient(cli.GetFd(), ":@localhost 471 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+l)");
 			return ;
 		}
 		else if(client_in_channel(cli.get_nick(), i)){
 			
-			sendMsgToClient(cli.GetFd(), ":@localhost 443 " + cli.get_nick() + ": You're already on that channel\r\n");	//);
+			sendMsgToClient(cli.GetFd(), ":@localhost 443 " + cli.get_nick() + ": You're already on that channel");	//);
 			return;
 		}
 		else if (_channels[i].getInviteOnlyChannelMode()) {	//ON, invite mode
@@ -177,9 +179,9 @@ void 		Server::privmsg_cmd(std::string cli_str, Client& cli){
 		sendMsgToClient(cli.GetFd(), ":localhost 442 " + cli.get_nick() + " " + target + " :You're not on that channel");
 		return;
 	}
-	else
-		sendlMsgToChannel(_channels[chan_exists].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " " + msg);
-	
+	else{
+		sendlMsgToChannel2(_channels[chan_exists].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " " + msg, cli); //another version
+	}
 }
 
 int Server::channel_exists(std::string channelName){
@@ -219,9 +221,9 @@ int Server::client_in_channel(std::string cli_nick, int index){
 
 std::string Server::get_full_msg(std::vector<std::string> cmd, int i){
 	unsigned int x = i;
-	std::string message = cmd[i];
-	i++;
-	for(; i < cmd.size() ; i++)
-		message += " " + cmd[i];
+	std::string message = cmd[x];
+	x++;
+	for(; x < cmd.size() ; x++)
+		message += " " + cmd[x];
 	return message;
 }

@@ -80,8 +80,10 @@ public:
 	void		validate_cli(Client&);
 	std::vector<std::string> tokenit_please(std::string str, int x);
 	int		verify_nicks(std::string str);
+
 	void		sendMsgToClient(int clientFd, std::string message);
 	void		sendlMsgToChannel(std::vector<Client> clientsList, std::string message);
+	void		sendlMsgToChannel2(std::vector<Client> clientsList, std::string message, Client& cli);
 
 	bool verify_channelName(std::string str, std::vector<std::string> cmd, Client& cli);
 	int channel_exists(std::string channelName);

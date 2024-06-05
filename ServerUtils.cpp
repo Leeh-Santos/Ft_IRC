@@ -152,8 +152,18 @@ void Server::sendMsgToClient(int clientFd, std::string message) {
 
 void	Server::sendlMsgToChannel(std::vector<Client> clientsList, std::string message) {
 	std::vector<Client>::iterator it;
-	for (it = clientsList.begin(); it < clientsList.end(); ++it)
+	for (it = clientsList.begin(); it < clientsList.end(); ++it){
 		sendMsgToClient((it)->GetFd(), message);
+	}
+}
+
+void	Server::sendlMsgToChannel2(std::vector<Client> clientsList, std::string message, Client& cli) {
+	std::vector<Client>::iterator it;
+	for (it = clientsList.begin(); it < clientsList.end(); ++it){
+		if ((it)->get_nick() == cli.get_nick()) // avoid sending to the sender
+			continue;
+		sendMsgToClient((it)->GetFd(), message);
+	}
 }
 
 //SETTERS AND GETTERS

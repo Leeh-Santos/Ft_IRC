@@ -11,9 +11,7 @@ entrada do nc/entrada no hex   --> a entrada pelo nc com o /
 
 essa merda fica mandando MODE #a e WHO #a depois de c
 
-destructor called?
-
-entrou nc e entrou hex fudeu 
+destructor called? 
 
 mensagens de error tinham que apacer no canal?-----------joga o exclamacao para funcionar, E SEM A POHA DO ARROBA, ARROBA joga no new network
 
@@ -28,8 +26,8 @@ trocou o nick oque faz depois?? NICK TEM QUE TROCAR NO HEX
 * Topic for #a is: 
 
 como tira o GARBAGE:?
-
+como atualizar o nome do nicl?
 
 explodui ao mandar: PRIVMSG asdasd
 function msg to chanel ta enviado para o sender
-fazer funcao para pegar todas as strings restantes
+
