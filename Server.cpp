@@ -44,7 +44,6 @@ void Server::ReceiveNewData(int fd, Client &cli)
 	std::string in = buff; //ja ta vindo com \n ou \r\n
 	//std::cout << "string received ->  " << in; 
 
-
 	if(bytes <= 0){
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		ClearClients(fd);

@@ -3,19 +3,23 @@
 
 void Server::cmd_execute(std::string cli_str, Client& cli) {
 	std::string first_word = cli_str.substr(0, cli_str.find(' '));
+	first_word = first_word.substr(0, '\r');
 
 	if (first_word == "pass" || first_word == "PASS")
-		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + "!" + cli.get_user() + " Already registered");
+		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + " :Already registered");
 	else if (first_word == "user" || first_word == "USER")
-		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + "!" + cli.get_user() + " Already registered");
+		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + "!" + cli.get_user() + " :Already registered");
 	else if (first_word == "nick" || first_word == "NICK")
 		change_nick(cli_str, cli);
 	else if (first_word == "join" || first_word == "JOIN")
 		join_cmd(cli_str, cli);
 	else if (first_word == "PRIVMSG" || first_word == "privmsg")
 		privmsg_cmd(cli_str, cli);
+	else if (first_word == "topic" || first_word == "TOPIC")
+		topic_cmd(cli_str, cli);
 	else{
-		client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + " unknown command"));
+		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command");
+		//client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command"));
 		std::cout << "first word: " << first_word << "||| string inteira :" << cli_str << std::endl;
 	}
 
@@ -99,7 +103,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 		std::cout << " destructors sendo chamados agora: " << std::endl;
 		Channel& newChannel = _channels.back(); 
 		sendlMsgToChannel(newChannel.getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
-		sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :No topic is set" + "\r\n");
+		sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :No topic is set");
 		joinChannel(_channels.size() - 1, cli, channelName, 1);
 	}
 	else {
@@ -137,14 +141,14 @@ bool Server::verify_channelName(std::string channelName, std::vector<std::string
 		sendMsgToClient(cli.GetFd(), ":461 " + cli.get_nick() + " JOIN :Not enough parameters");
 		return 0;
 	}else if (channelName[0] != '#') { // Se não começar por #, primeiro char
-		sendMsgToClient(cli.GetFd(), ":403 " + cli.get_nick() + "!" + cli.get_user() + " " + cmd[1] + ": No such channel");
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + cmd[1] + ":No such channel");
 		return 0;
 	}else if (channelName.size() == 1) {
-		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + "!" + cli.get_user() + " " + cmd[1] + ": No such channel");
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + cmd[1] + ":No such channel");
 		return 0;
 	}else if (channelName.size() > 50) {
 		//sendMsgToClient(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + cmd[1] + ": Channel name too long");
-		sendMsgToClient(cli.GetFd(), ":475 " + cli.get_nick() + "!" + cli.get_user() + " " + cmd[1] + ": Channel name too long");
+		sendMsgToClient(cli.GetFd(), ":Server 475 " + cli.get_nick() + " " + cmd[1] + ":Channel name too long");
 		return 0;
 	} else
 		return 1;
@@ -169,7 +173,7 @@ void 		Server::privmsg_cmd(std::string cli_str, Client& cli){
 			return;
 		}
 		else
-			sendMsgToClient(_clients[nick_exists].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + " " + msg);
+			sendMsgToClient(_clients[nick_exists].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + " PRIVMSG " + target + " " + msg);
 	}
 	else if(chan_exists == -1){
 		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + " " + target + " :No such channel");
@@ -226,4 +230,19 @@ std::string Server::get_full_msg(std::vector<std::string> cmd, int i){
 	for(; x < cmd.size() ; x++)
 		message += " " + cmd[x];
 	return message;
+}
+
+void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel nome do topicp
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+	std::string chan_name = cmd[1];
+
+	if(cmd.size() < 2)
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+	if (channel_exists(chan_name) == -1)
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + chan_name + ":No such channel");
+	
+
+	
+	
+
 }

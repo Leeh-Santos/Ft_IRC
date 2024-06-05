@@ -31,3 +31,12 @@ como atualizar o nome do nicl?
 explodui ao mandar: PRIVMSG asdasd
 function msg to chanel ta enviado para o sender
 
+:lea!learodri@F456A.75198A.60D2B2.ADA236.IP PRIVMSG #a :asdasd
+
+
+:lea!learodri@F456A.75198A.60D2B2.ADA236.IP PRIVMSG leas :chama
+
+:leas!learodri@F456A.75198A.60D2B2.ADA236.IP PRIVMSG lea :asd
+
+
+CUIDADO COM FORMATACOES DA MSG PELO tokenit_please E PELA ENTRADA

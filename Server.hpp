@@ -65,12 +65,12 @@ public:
 	//COMMANDS
 	void		cmd_execute(std::string cli_str, Client& cli);
 	void		change_nick(std::string cli_str,Client& cli);
-	//JOIN
 	void		checkPassJoinOrReturn(int i, Client& cli, std::string channelName, std::string pass);
 	void		joinChannel(int i, Client& cli, std::string channelName, int flag);
 	bool		channelNameEquals(const Channel& channel, const std::string& name);
 	void		join_cmd(std::string cmd_line, Client& cli);
 	void 		privmsg_cmd(std::string cli_str, Client& cli);
+	void Server::topic_cmd(std::string cli_str, Client &cli);
 
 	std::string	str_cutter(std::string);
 
