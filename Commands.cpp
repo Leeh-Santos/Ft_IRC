@@ -232,17 +232,26 @@ std::string Server::get_full_msg(std::vector<std::string> cmd, int i){
 	return message;
 }
 
-void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel nome do topicp
+void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel nome do topicp 
 	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
 	std::string chan_name = cmd[1];
+	int index = channel_exists(chan_name);
 
+	
+	
 	if(cmd.size() < 2)
 		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
 	if (channel_exists(chan_name) == -1)
-		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + chan_name + ":No such channel");
-	
-
-	
-	
+		sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + ":No such channel");
+	if(cmd.size() == 2){
+		if (_channels[index].getTopic() == "") //se existe topic ou nao para mandar 
+			sendMsgToClient(cli.GetFd(), ":Server 331 " + cli.get_nick() + " " + chan_name + ":No topic is set."); // :luna.AfterNET.Org 331 lea #asd :No topic is set.
+		else
+			sec
+	}
+	else if (cmd.size() >= 3){
+		std::string msg = get_full_msg(cmd, 2);
+	}
+		
 
 }
