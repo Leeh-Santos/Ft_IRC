@@ -247,8 +247,6 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 	//:luna.AfterNET.Org 332 Le #a :trocou tudo
 	//:luna.AfterNET.Org 333 Le #a Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP 1717775316
 
-	
-	
 	if (channel_exists(chan_name) == -1)
 		sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + ":No such channel");
 	if (!client_in_channel(cli.get_nick(), index)){
@@ -264,20 +262,20 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 	}
 	else if (cmd.size() >= 3){
 		std::string msg = get_full_msg(cmd, 2);
+
 		if (_channels[index].getOperator() != cli.get_nick()){ //check if the client is the operator
 			if(_channels[index].getTopicMode() == false){
 				sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + ":You're not channel operator");
 				return;
 			}
 			else{
-				_channels[index].setTopic(msg);
+				_channels[index].setTopic(msg.substr(msg.find_first_of(':') + 1));//vamo ver dps 
 				sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " TOPIC " + chan_name + " " + msg);
 			}
 		}//>> :Lea!Lea@E32A1D:BD8DBE:9E2AD0:3C77BE:IP TOPIC #ad :asdasd asd
 		else{
 			_channels[index].setTopic(msg);
 			sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " TOPIC " + chan_name + " " + msg);\
-				//:Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP TOPIC #a :troca essa merda   - manda pa geral do canal do server pa trocar o nome
 		}
 	}
 
