@@ -70,7 +70,7 @@ public:
 	bool		channelNameEquals(const Channel& channel, const std::string& name);
 	void		join_cmd(std::string cmd_line, Client& cli);
 	void 		privmsg_cmd(std::string cli_str, Client& cli);
-	void Server::topic_cmd(std::string cli_str, Client &cli);
+	void 		topic_cmd(std::string cli_str, Client &cli);
 
 	std::string	str_cutter(std::string);
 
