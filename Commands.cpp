@@ -17,6 +17,8 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 		privmsg_cmd(cli_str, cli);
 	else if (first_word == "topic" || first_word == "TOPIC")
 		topic_cmd(cli_str, cli);
+	else if (first_word == "KICK" || first_word == "kick")
+		topic_cmd(cli_str, cli);
 	else{
 		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command");
 		//client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command"));
@@ -244,6 +246,8 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 	std::string chan_name = cmd[1];
 	int index = channel_exists(chan_name);
 
+	std::string times = to_string(time(NULL));
+
 	//:luna.AfterNET.Org 332 Le #a :trocou tudo
 	//:luna.AfterNET.Org 333 Le #a Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP 1717775316	
 	
@@ -260,7 +264,7 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 			sendMsgToClient(cli.GetFd(), ":Server 331 " + cli.get_nick() + " " + chan_name + ":No topic is set."); // :luna.AfterNET.Org 331 lea #asd :No topic is set.
 		else{
 			sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getTopic());
-			sendMsgToClient(cli.GetFd(), ":Server 333 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getOperator());
+			sendMsgToClient(cli.GetFd(), ":Server 333 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getOperator() + " " + times);
 		}		
 	}
 	else if (cmd.size() >= 3){
@@ -281,4 +285,11 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 				//:Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP TOPIC #a :troca essa merda   - manda pa geral do canal do server pa trocar o nome
 		}
 	}
+}
+
+
+std::string Server::to_string(int value) {
+	std::ostringstream os;
+	os << value;
+	return os.str();
 }

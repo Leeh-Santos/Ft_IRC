@@ -20,6 +20,7 @@
 #include <string>
 #include <cstdlib>
 #include <algorithm>
+#include <time.h>
 #include <sstream>
 //-------------------------------------------------------//
 #define RED "\e[1;31m"
@@ -93,6 +94,7 @@ public:
 	int client_in_channel(std::string, int);
 
 	std::string get_full_msg(std::vector<std::string> cmd, int i);
+	std::string to_string(int value);
 
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
