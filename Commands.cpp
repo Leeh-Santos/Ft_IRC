@@ -247,8 +247,13 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 	//:luna.AfterNET.Org 332 Le #a :trocou tudo
 	//:luna.AfterNET.Org 333 Le #a Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP 1717775316
 
+	
+	
 	if (channel_exists(chan_name) == -1)
 		sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + ":No such channel");
+	if (!client_in_channel(cli.get_nick(), index)){
+		sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + ":You are not on this fucking channel bro, stop forcing my parsing thru nc");
+	}
 	if(cmd.size() == 2){
 		if (_channels[index].getTopic() == "") //se existe topic ou nao para mandar 
 			sendMsgToClient(cli.GetFd(), ":Server 331 " + cli.get_nick() + " " + chan_name + ":No topic is set."); // :luna.AfterNET.Org 331 lea #asd :No topic is set.
