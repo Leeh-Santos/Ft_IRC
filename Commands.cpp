@@ -259,7 +259,7 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 		if (_channels[index].getTopic() == "") //se existe topic ou nao para mandar 
 			sendMsgToClient(cli.GetFd(), ":Server 331 " + cli.get_nick() + " " + chan_name + ":No topic is set."); // :luna.AfterNET.Org 331 lea #asd :No topic is set.
 		else{
-			sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + " :" + _channels[index].getTopic());
+			sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getTopic());
 			sendMsgToClient(cli.GetFd(), ":Server 333 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getOperator());
 		}		
 	}
@@ -277,10 +277,8 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 		}//>> :Lea!Lea@E32A1D:BD8DBE:9E2AD0:3C77BE:IP TOPIC #ad :asdasd asd
 		else{
 			_channels[index].setTopic(msg);
-			sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " TOPIC " + chan_name + " " + msg);\
+			sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " TOPIC " + chan_name + " " + msg);
 				//:Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP TOPIC #a :troca essa merda   - manda pa geral do canal do server pa trocar o nome
 		}
 	}
-
-
 }
