@@ -40,3 +40,6 @@ function msg to chanel ta enviado para o sender
 
 
 CUIDADO COM FORMATACOES DA MSG PELO tokenit_please E PELA ENTRADA
+
+
+MODE MANDA MSG PARA A POHA TODA

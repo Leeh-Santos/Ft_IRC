@@ -39,6 +39,26 @@ public:
 	std::string			getchannelPass() const;
 	int					getClientLimitChannelModeAndValue() const; // if = 0 mode off, if > 0 is value of the limit
 
+	void setChannelName(std::string name){
+		_channelName = name;	
+	}
+	void setTopic(std::string topic){
+		_topic = topic;	}
+	void setTopicMode(bool mode){
+		_topicMode = mode;	
+	}
+	void setInviteOnlyChannelMode(bool mode){
+		_inviteOnlyChannelMode = mode;	
+	}
+	void 	setchannelPass(std::string pass){
+		_channelPass = pass;	
+	}
+	void	setClientLimitChannelModeAndValue(int value){
+		_clientLimitChannelModeAndValue = value;	
+	}
+	
+	
+
 	void				setOperator(std::string op);
 };
 
