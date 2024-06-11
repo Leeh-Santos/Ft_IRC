@@ -17,6 +17,8 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 		privmsg_cmd(cli_str, cli);
 	else if (first_word == "topic" || first_word == "TOPIC")
 		topic_cmd(cli_str, cli);
+	else if (first_word == "INVITE" || first_word == "invite")
+		invite_cmd(cli_str, cli);
 	else{
 		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command");
 		//client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command"));
@@ -248,15 +250,19 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 	//:luna.AfterNET.Org 333 Le #a Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP 1717775316
 
 	if (channel_exists(chan_name) == -1)
+	{
 		sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + ":No such channel");
+		return;
+	}
 	if (!client_in_channel(cli.get_nick(), index)){
 		sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + ":You are not on this fucking channel bro, stop forcing my parsing thru nc");
+		return;
 	}
 	if(cmd.size() == 2){
 		if (_channels[index].getTopic() == "") //se existe topic ou nao para mandar 
 			sendMsgToClient(cli.GetFd(), ":Server 331 " + cli.get_nick() + " " + chan_name + ":No topic is set."); // :luna.AfterNET.Org 331 lea #asd :No topic is set.
 		else{
-			sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + " :" + _channels[index].getTopic());
+			sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getTopic());
 			sendMsgToClient(cli.GetFd(), ":Server 333 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getOperator());
 		}		
 	}
@@ -275,9 +281,48 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 		}//>> :Lea!Lea@E32A1D:BD8DBE:9E2AD0:3C77BE:IP TOPIC #ad :asdasd asd
 		else{
 			_channels[index].setTopic(msg);
-			sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " TOPIC " + chan_name + " " + msg);\
+			sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " TOPIC " + chan_name + " " + msg);
 		}
 	}
-
-
 }
+
+void Server::invite_cmd(std::string cli_str, Client &cli)
+	{
+		std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+		if (cmd.size() < 3)
+		{
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+			return;
+		}
+		std::string nick = cmd[1];
+		std::string chan_name = cmd[2];
+		int index = channel_exists(chan_name);
+		int nick_index = verify_nicks(nick);
+		if (nick_index == -1)
+		{
+			sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + nick + " :No such nick");
+			return;
+		}
+		if (index == -1)
+		{
+			sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + chan_name + " :No such channel");
+			return;
+		}
+		
+		if (_channels[index].getOperator() != cli.get_nick())
+		{
+			sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
+			return;
+		}
+		if (client_in_channel(nick, index))
+		{
+			sendMsgToClient(cli.GetFd(), ":Server 443 " + cli.get_nick() + " " + nick + " :is already in channel");
+			return;
+		}
+		_channels[index].addInviteList(_clients[nick_index]);
+		sendMsgToClient(cli.GetFd(), ":Server 341 " + cli.get_nick() + " " + nick + " " + chan_name);
+		sendMsgToClient(_clients[nick_index].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " INVITE " + nick + " " + chan_name);
+
+		//falta setar o modo para invite only e verificar se o nick esta na lista de invites
+	}
+
