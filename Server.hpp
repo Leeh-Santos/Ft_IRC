@@ -72,6 +72,7 @@ public:
 	void 		privmsg_cmd(std::string cli_str, Client& cli);
 	void 		topic_cmd(std::string cli_str, Client &cli);
 	void		invite_cmd(std::string cli_str, Client &cli);
+	void		mode_cmd(std::string cli_str, Client &cli);
 
 	std::string	str_cutter(std::string);
 

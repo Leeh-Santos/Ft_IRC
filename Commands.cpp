@@ -19,6 +19,8 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 		topic_cmd(cli_str, cli);
 	else if (first_word == "INVITE" || first_word == "invite")
 		invite_cmd(cli_str, cli);
+	else if(first_word == "mode" || first_word == "MODE")
+		 mode_cmd(cli_str, cli);
 	else{
 		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command");
 		//client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command"));
@@ -286,14 +288,8 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 	}
 }
 
-void Server::invite_cmd(std::string cli_str, Client &cli)
-	{
+void Server::invite_cmd(std::string cli_str, Client &cli){
 		std::vector<std::string> cmd = tokenit_please(cli_str, 1);
-		if (cmd.size() < 3)
-		{
-			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
-			return;
-		}
 		std::string nick = cmd[1];
 		std::string chan_name = cmd[2];
 		int index = channel_exists(chan_name);
@@ -322,7 +318,33 @@ void Server::invite_cmd(std::string cli_str, Client &cli)
 		_channels[index].addInviteList(_clients[nick_index]);
 		sendMsgToClient(cli.GetFd(), ":Server 341 " + cli.get_nick() + " " + nick + " " + chan_name);
 		sendMsgToClient(_clients[nick_index].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " INVITE " + nick + " " + chan_name);
-
-		//falta setar o modo para invite only e verificar se o nick esta na lista de invites
 	}
 
+void Server::mode_cmd(std::string cli_str, Client& cli){
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	if (cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+		return;
+	}
+	std::string chan_name = cmd[1];
+	std::string mode = cmd[2];
+	int index = channel_exists(chan_name);
+	if (index == -1){
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + chan_name + " :No such channel");
+		return;
+	}
+	if (_channels[index].getOperator() != cli.get_nick())
+	{
+		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
+		return;
+	}
+	if (mode == "+i" || mode == "i"){
+		_channels[index].setInviteOnlyChannelMode(true);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +i");
+	}
+	else if (mode == "-i"){
+		_channels[index].setInviteOnlyChannelMode(false);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -i");
+	}
+}
