@@ -339,12 +339,24 @@ void Server::mode_cmd(std::string cli_str, Client& cli){
 		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
 		return;
 	}
-	if (mode == "+i" || mode == "i"){
+	else if ((mode == "+i" || mode == "i") && !_channels[index].getInviteOnlyChannelMode()){
 		_channels[index].setInviteOnlyChannelMode(true);
 		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +i");
+		return;
 	}
-	else if (mode == "-i"){
+	else if ((mode == "-i") && _channels[index].getInviteOnlyChannelMode()){
 		_channels[index].setInviteOnlyChannelMode(false);
 		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -i");
+		return;
+	}
+	else if ((mode == "+t" || mode == "t") && !_channels[index].getTopicMode()){
+		_channels[index].setTopicMode(true);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +t");
+		return;
+	}
+	else if ((mode == "-t") && _channels[index].getTopicMode()){
+		_channels[index].setTopicMode(false);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -t");
+		return;
 	}
 }
