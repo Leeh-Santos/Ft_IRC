@@ -46,3 +46,20 @@ void				Channel::setOperator(std::string op){
 	_operator = op;
 }
 
+void 	Channel::removeClient(std::string target){
+	std::vector<Client>::iterator it;
+	for (it = _InvCliList.begin(); it != _InvCliList.end(); ++it){
+		if ((it)->get_nick() == target){
+			_clientsList.erase(it);
+			break;
+		}
+	}
+	
+	std::vector<Client>::iterator it2;
+	for (it2 = _clientsList.begin(); it2 != _clientsList.end(); ++it2){
+		if ((it2)->get_nick() == target){
+			_clientsList.erase(it2);
+			break;
+		}
+	}
+}

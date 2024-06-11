@@ -18,10 +18,10 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 	else if (first_word == "topic" || first_word == "TOPIC")
 		topic_cmd(cli_str, cli);
 	else if (first_word == "KICK" || first_word == "kick")
-		topic_cmd(cli_str, cli);
+		kick_cmd(cli_str, cli);
 	else{
-		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command");
-		//client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command"));
+		//:luna.AfterNET.Org 421 lean1 asdasdasdasd :Unknown command
+		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + " :Unknown command");
 		std::cout << "first word: " << first_word << "||| string inteira :" << cli_str << std::endl;
 	}
 
@@ -156,7 +156,7 @@ bool Server::verify_channelName(std::string channelName, std::vector<std::string
 		return 1;
 }
 
-void 		Server::privmsg_cmd(std::string cli_str, Client& cli){
+void 		Server::privmsg_cmd(std::string cli_str, Client& cli){ 
 
 	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
 
@@ -164,29 +164,29 @@ void 		Server::privmsg_cmd(std::string cli_str, Client& cli){
 		sendMsgToClient(cli.GetFd(), ":localhost 461 " + cli.get_nick() + "Need more parameters");
 		return;
 	}
-	std::string target = cmd[1];
-	int chan_exists = channel_exists(target); //returns -1 if doesn't exist
-	int nick_exists = verify_nicks(target); //returns -1 if doesn't exist
+	std::string channel = cmd[1];
+	int chan_exists = channel_exists(channel); //returns -1 if doesn't exist
+	int nick_exists = verify_nicks(channel); //returns -1 if doesn't exist
 	std::string msg = get_full_msg(cmd, 2); //cuidado se vem menos strings
 
-	if (target[0] != '#'){ //then wants to send to a user no inside a channel
+	if (channel[0] != '#'){ //then wants to send to a user no inside a channel
 		if(nick_exists == -1 || !_clients[nick_exists].is_verified()){
-			sendMsgToClient(cli.GetFd(), ":localhost 401 " + cli.get_nick() + " " + target + " :No such nick");
+			sendMsgToClient(cli.GetFd(), ":localhost 401 " + cli.get_nick() + " " + channel + " :No such nick");
 			return;
 		}
 		else
-			sendMsgToClient(_clients[nick_exists].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + " PRIVMSG " + target + " " + msg);
+			sendMsgToClient(_clients[nick_exists].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + " PRIVMSG " + channel + " " + msg);
 	}
 	else if(chan_exists == -1){
-		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + " " + target + " :No such channel");
+		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + " " + channel + " :No such channel");
 		return;
 	}
 	else if(!client_in_channel(cli.get_nick(), chan_exists)){
-		sendMsgToClient(cli.GetFd(), ":localhost 442 " + cli.get_nick() + " " + target + " :You're not on that channel");
+		sendMsgToClient(cli.GetFd(), ":localhost 442 " + cli.get_nick() + " " + channel + " :You're not on that channel");
 		return;
 	}
 	else{
-		sendlMsgToChannel2(_channels[chan_exists].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " " + msg, cli); //another version
+		sendlMsgToChannel2(_channels[chan_exists].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " PRIVMSG " + channel + " " + msg, cli); //another version
 	}
 }
 
@@ -292,4 +292,58 @@ std::string Server::to_string(int value) {
 	std::ostringstream os;
 	os << value;
 	return os.str();
+}
+
+void Server::kick_cmd(std::string cli_str, Client& cli){ //KICK #a lean2     KICK #b lean2 :asdasdasd asd sdf
+
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	if (cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+		return;
+	}
+
+	std::string channelName = cmd[1];
+	int index = channel_exists(channelName);
+	std::string target = cmd[2];
+
+	if (channel_exists(channelName) == -1){
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + channelName + " :No such channel");
+		return;
+	}
+	if(_channels[index].getOperator() != cli.get_nick()){
+		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + channelName + " :You're not channel operator");
+		return;
+	}
+	if(!client_in_channel(cli.get_nick(), index)){
+		sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + " :You're not on that channel");
+		return;
+	}
+	if (!client_in_channel(target, index)){
+		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + target + " :No such nick");
+		return;
+	}
+	
+	if (cmd.size() == 3){
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " :" + cli.get_nick());
+		_channels[index].removeClient(target);
+	}
+	else{
+		std::string msg = get_full_msg(cmd, 3);
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " " + msg);
+		_channels[index].removeClient(target);
+	}
+	
+
+
+	
+   //>> :lean1!learodri@AN-A795207B.226.108.93.rev.vodafone.pt KICK #a lean2 :lean1 -> ,manda pro que kickou
+
+   //	:lean1!learodri@AN-A795207B.226.108.93.rev.vodafone.pt KICK #a lean2 :lean1 -> manda para o que foi kickado
+
+	//:lean1!learodri@AN-A795207B.226.108.93.rev.vodafone.pt KICK #z lean2 :arrombado do carai
+	
+
+	//KICK #a lean2     KICK #b lean2 :asdasdasd asd sdf
+	
 }

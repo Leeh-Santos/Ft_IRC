@@ -96,6 +96,8 @@ public:
 	std::string get_full_msg(std::vector<std::string> cmd, int i);
 	std::string to_string(int value);
 
+	void kick_cmd(std::string cli_str, Client& cli);
+
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
 	std::vector<Channel>& getChannels();
