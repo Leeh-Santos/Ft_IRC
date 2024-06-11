@@ -19,15 +19,14 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 		topic_cmd(cli_str, cli);
 	else if (first_word == "INVITE" || first_word == "invite")
 		invite_cmd(cli_str, cli);
+	else if (first_word == "KICK" || first_word == "kick")
+		kick_cmd(cli_str, cli);
 	else if(first_word == "mode" || first_word == "MODE")
 		 mode_cmd(cli_str, cli);
 	else{
-		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command");
-		//client_sender(cli.GetFd(), (":Server 421 " + cli.get_nick() + " " + first_word + ":Unknown command"));
+		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + " :Unknown command");
 		std::cout << "first word: " << first_word << "||| string inteira :" << cli_str << std::endl;
 	}
-
-
 }
 
 void Server::change_nick(std::string cli_str, Client& cli){
@@ -166,29 +165,29 @@ void 		Server::privmsg_cmd(std::string cli_str, Client& cli){
 		sendMsgToClient(cli.GetFd(), ":localhost 461 " + cli.get_nick() + "Need more parameters");
 		return;
 	}
-	std::string target = cmd[1];
-	int chan_exists = channel_exists(target); //returns -1 if doesn't exist
-	int nick_exists = verify_nicks(target); //returns -1 if doesn't exist
+	std::string channel = cmd[1];
+	int chan_exists = channel_exists(channel); //returns -1 if doesn't exist
+	int nick_exists = verify_nicks(channel); //returns -1 if doesn't exist
 	std::string msg = get_full_msg(cmd, 2); //cuidado se vem menos strings
 
-	if (target[0] != '#'){ //then wants to send to a user no inside a channel
+	if (channel[0] != '#'){ //then wants to send to a user no inside a channel
 		if(nick_exists == -1 || !_clients[nick_exists].is_verified()){
-			sendMsgToClient(cli.GetFd(), ":localhost 401 " + cli.get_nick() + " " + target + " :No such nick");
+			sendMsgToClient(cli.GetFd(), ":localhost 401 " + cli.get_nick() + " " + channel + " :No such nick");
 			return;
 		}
 		else
-			sendMsgToClient(_clients[nick_exists].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + " PRIVMSG " + target + " " + msg);
+			sendMsgToClient(_clients[nick_exists].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + " PRIVMSG " + channel + " " + msg);
 	}
 	else if(chan_exists == -1){
-		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + " " + target + " :No such channel");
+		sendMsgToClient(cli.GetFd(), ":localhost 403 " + cli.get_nick() + " " + channel + " :No such channel");
 		return;
 	}
 	else if(!client_in_channel(cli.get_nick(), chan_exists)){
-		sendMsgToClient(cli.GetFd(), ":localhost 442 " + cli.get_nick() + " " + target + " :You're not on that channel");
+		sendMsgToClient(cli.GetFd(), ":localhost 442 " + cli.get_nick() + " " + channel + " :You're not on that channel");
 		return;
 	}
 	else{
-		sendlMsgToChannel2(_channels[chan_exists].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " " + msg, cli); //another version
+		sendlMsgToChannel2(_channels[chan_exists].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " PRIVMSG " + channel + " " + msg, cli);
 	}
 }
 
@@ -248,8 +247,7 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 	std::string chan_name = cmd[1];
 	int index = channel_exists(chan_name);
 
-	//:luna.AfterNET.Org 332 Le #a :trocou tudo
-	//:luna.AfterNET.Org 333 Le #a Lea!Lea@1DDA9:8857D9:9E2AD0:3C77BE:IP 1717775316
+	std::string times = to_string(time(NULL));
 
 	if (channel_exists(chan_name) == -1)
 	{
@@ -265,7 +263,7 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 			sendMsgToClient(cli.GetFd(), ":Server 331 " + cli.get_nick() + " " + chan_name + ":No topic is set."); // :luna.AfterNET.Org 331 lea #asd :No topic is set.
 		else{
 			sendMsgToClient(cli.GetFd(), ":Server 332 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getTopic());
-			sendMsgToClient(cli.GetFd(), ":Server 333 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getOperator());
+			sendMsgToClient(cli.GetFd(), ":Server 333 " + cli.get_nick() + " " + chan_name + " " + _channels[index].getOperator() + " " + times);
 		}		
 	}
 	else if (cmd.size() >= 3){
@@ -286,6 +284,12 @@ void Server::topic_cmd(std::string cli_str, Client &cli){ // TOPIC #nomedochanel
 			sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " TOPIC " + chan_name + " " + msg);
 		}
 	}
+}
+
+std::string Server::to_string(int value){
+	std::ostringstream os;
+	os << value;
+	return os.str();
 }
 
 void Server::invite_cmd(std::string cli_str, Client &cli){
@@ -358,5 +362,46 @@ void Server::mode_cmd(std::string cli_str, Client& cli){
 		_channels[index].setTopicMode(false);
 		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -t");
 		return;
+	}
+}
+
+void Server::kick_cmd(std::string cli_str, Client& cli){ //KICK #a lean2     KICK #b lean2 :asdasdasd asd sdf
+
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	if (cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+		return;
+	}
+
+	std::string channelName = cmd[1];
+	int index = channel_exists(channelName);
+	std::string target = cmd[2];
+
+	if (channel_exists(channelName) == -1){
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + channelName + " :No such channel");
+		return;
+	}
+	if(_channels[index].getOperator() != cli.get_nick()){
+		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + channelName + " :You're not channel operator");
+		return;
+	}
+	if(!client_in_channel(cli.get_nick(), index)){
+		sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + " :You're not on that channel");
+		return;
+	}
+	if (!client_in_channel(target, index)){
+		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + target + " :No such nick");
+		return;
+	}
+	
+	if (cmd.size() == 3){
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " :" + cli.get_nick());
+		_channels[index].removeClient(target);
+	}
+	else{
+		std::string msg = get_full_msg(cmd, 3);
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " " + msg);
+		_channels[index].removeClient(target);
 	}
 }

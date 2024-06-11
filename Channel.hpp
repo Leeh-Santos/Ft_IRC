@@ -38,6 +38,7 @@ public:
 	std::string			getTopic() const;
 	std::string			getchannelPass() const;
 	int					getClientLimitChannelModeAndValue() const; // if = 0 mode off, if > 0 is value of the limit
+	void 				removeClient(std::string target);
 
 	void setChannelName(std::string name){
 		_channelName = name;	

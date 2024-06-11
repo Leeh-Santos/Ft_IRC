@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <algorithm>
 #include <sstream>
+#include <time.h>
 //-------------------------------------------------------//
 #define RED "\e[1;31m"
 #define WHI "\e[0;37m"
@@ -73,6 +74,7 @@ public:
 	void 		topic_cmd(std::string cli_str, Client &cli);
 	void		invite_cmd(std::string cli_str, Client &cli);
 	void		mode_cmd(std::string cli_str, Client &cli);
+	void		kick_cmd(std::string cli_str, Client& cli);
 
 	std::string	str_cutter(std::string);
 
@@ -95,6 +97,7 @@ public:
 	int client_in_channel(std::string, int);
 
 	std::string get_full_msg(std::vector<std::string> cmd, int i);
+	std::string to_string(int value);
 
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
