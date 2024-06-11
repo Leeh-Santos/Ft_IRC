@@ -63,7 +63,7 @@ void	Server::joinChannel(int i, Client& cli, std::string channelName, int adm_fl
 	_channels[i].addClient(cli);
 	//sendMsgToClient(cli.GetFd(), ":@localhost 332 " + cli.get_nick() + " " + channelName + " :" + _channels[i].getTopic());
 	//sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
-	sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + channelName + " :" + _channels[i].getTopic());
+	//sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + channelName + " :" + _channels[i].getTopic());
 	sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName);
 	if (adm_flag){
 		_channels[i].setOperator(cli.get_nick());
