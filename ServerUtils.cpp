@@ -15,7 +15,7 @@ void Server::validate_cli(Client& cli){
 	}
 	else if (cli.get_nick() != "" && cli.get_user() != "" && cli.get_bool_pass() != 0) {
 		cli.set_verified(1);
-		client_sender(cli.GetFd(), "Welcome to IRC SERVER meu Parceiro");
+		client_sender(cli.GetFd(), "Welcome to IRC SERVER meu Parceiro, PLEASE USE HEXCHAT(OUR IRC CLIENT) SYNTAX");
 	}
 }
 
