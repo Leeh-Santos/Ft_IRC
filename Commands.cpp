@@ -324,6 +324,47 @@ void Server::invite_cmd(std::string cli_str, Client &cli){
 		sendMsgToClient(_clients[nick_index].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " INVITE " + nick + " " + chan_name);
 	}
 
+void Server::kick_cmd(std::string cli_str, Client& cli){ //KICK #a lean2     KICK #b lean2 :asdasdasd asd sdf
+
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	if (cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+		return;
+	}
+
+	std::string channelName = cmd[1];
+	int index = channel_exists(channelName);
+	std::string target = cmd[2];
+
+	if (channel_exists(channelName) == -1){
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + channelName + " :No such channel");
+		return;
+	}
+	if(_channels[index].getOperator() != cli.get_nick()){
+		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + channelName + " :You're not channel operator");
+		return;
+	}
+	if(!client_in_channel(cli.get_nick(), index)){
+		sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + " :You're not on that channel");
+		return;
+	}
+	if (!client_in_channel(target, index)){
+		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + target + " :No such nick");
+		return;
+	}
+	
+	if (cmd.size() == 3){
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " :" + cli.get_nick());
+		_channels[index].removeClient(target);
+	}
+	else{
+		std::string msg = get_full_msg(cmd, 3);
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " " + msg);
+		_channels[index].removeClient(target);
+	}
+}
+
 void Server::mode_cmd(std::string cli_str, Client& cli){
 	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
 
@@ -363,45 +404,24 @@ void Server::mode_cmd(std::string cli_str, Client& cli){
 		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -t");
 		return;
 	}
-}
-
-void Server::kick_cmd(std::string cli_str, Client& cli){ //KICK #a lean2     KICK #b lean2 :asdasdasd asd sdf
-
-	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
-
-	if (cmd.size() < 3){
-		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+	else if ((mode == "+l" || mode == "l"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		int limit = atoi(cmd[3].c_str());
+		if ((limit != _channels[index].getClientLimitChannelModeAndValue()) && limit > 0)
+		{
+		_channels[index].setClientLimitChannelModeAndValue(limit);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +l " + to_string(limit));
 		return;
+		}
 	}
-
-	std::string channelName = cmd[1];
-	int index = channel_exists(channelName);
-	std::string target = cmd[2];
-
-	if (channel_exists(channelName) == -1){
-		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + channelName + " :No such channel");
+	else if ((mode == "-l") && _channels[index].getClientLimitChannelModeAndValue())
+	{
+		_channels[index].setClientLimitChannelModeAndValue(0);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -l");
 		return;
-	}
-	if(_channels[index].getOperator() != cli.get_nick()){
-		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + channelName + " :You're not channel operator");
-		return;
-	}
-	if(!client_in_channel(cli.get_nick(), index)){
-		sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + " :You're not on that channel");
-		return;
-	}
-	if (!client_in_channel(target, index)){
-		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + target + " :No such nick");
-		return;
-	}
-	
-	if (cmd.size() == 3){
-		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " :" + cli.get_nick());
-		_channels[index].removeClient(target);
-	}
-	else{
-		std::string msg = get_full_msg(cmd, 3);
-		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " " + msg);
-		_channels[index].removeClient(target);
 	}
 }
