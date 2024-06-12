@@ -75,17 +75,25 @@ void	Server::joinChannel(int i, Client& cli, std::string channelName, int adm_fl
 
 void	Server::checkPassJoinOrReturn(int i, Client& cli, std::string channelName, std::string pass)
 {
-	if (_channels[i].getchannelPass().empty()) {		//Se ha pass
+	if (!_channels[i].getchannelPass().empty()) {		//Se ha pass
 		if (pass == _channels[i].getchannelPass())			//E se pass correcta
 			joinChannel(i, cli, channelName, 0);
 		else {											//Se pass e esta incorrecta
-			sendMsgToClient(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + channelName + " :Bad channel password");
+			sendMsgToClient(cli.GetFd(), ":Server 475 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+k)");
 			return ;
 		}
 	}
 	else										//Se nao ha pass
 		joinChannel(i, cli, channelName, 0);
 }
+
+/*
+<< JOIN #teste
+>> :Aurora.AfterNET.Org PONG Aurora.AfterNET.Org :LAG1718174740045
+>> :Aurora.AfterNET.Org 475 caraioo #teste :Cannot join channel (+k)
+<< JOIN #teste ola
+>> :Aurora.AfterNET.Org 475 caraioo #teste :Cannot join channel (+k)
+*/
 
 void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n  join #asdasdas /r/n /join #a
 	std::cout << " nao ta entrando" << std::endl;
@@ -422,6 +430,33 @@ void Server::mode_cmd(std::string cli_str, Client& cli){
 	{
 		_channels[index].setClientLimitChannelModeAndValue(0);
 		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -l");
+		return;
+	}
+	else if ((mode == "+k" || mode == "k"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		std::string pass = cmd[3];
+		if(!_channels[index].getchannelPass().empty())
+		{
+		sendMsgToClient(cli.GetFd(), ":Server 467 " + cli.get_nick() + " " + chan_name + " :Channel key is already set");
+		return;
+		}
+		if (_channels[index].getchannelPass().empty())
+		{
+		_channels[index].setchannelPass(pass);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +k " + pass);
+		sendlMsgToChannel2(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +k " + pass, cli);
+		return;
+		}
+	}
+	else if ((mode == "-k") && !_channels[index].getchannelPass().empty() && cmd[3] == _channels[index].getchannelPass())
+	{
+		_channels[index].setchannelPass("");
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -k " + _channels[index].getchannelPass());
+		sendlMsgToChannel2(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -k " + _channels[index].getchannelPass(), cli);
 		return;
 	}
 }

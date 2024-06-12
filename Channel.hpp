@@ -52,7 +52,7 @@ public:
 		_inviteOnlyChannelMode = mode;	
 	}
 	void 	setchannelPass(std::string pass){
-		_channelPass = pass;	
+		_channelPass = pass;
 	}
 	void	setClientLimitChannelModeAndValue(int value){
 		_clientLimitChannelModeAndValue = value;	

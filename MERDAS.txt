@@ -43,3 +43,18 @@ CUIDADO COM FORMATACOES DA MSG PELO tokenit_please E PELA ENTRADA
 
 
 MODE MANDA MSG PARA A POHA TODA
+
+fazer quit para qnd fechar hexchat nao dar pau
+
+usar ip 10.12.2.3
+
+
+pra quem ta na sala
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste -k pass
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste +k pass
+
+quem usa o mode k
+<< MODE #teste -k pass
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste -k pass
+<< MODE #teste k pass
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste +k pass
