@@ -36,6 +36,8 @@ public:
 	std::string get_user();
 	void set_bool_pass(int x);
 	int get_bool_pass();
+
+	void refresh_buffer();
 };
 
 #endif
