@@ -61,7 +61,7 @@ void Server::handle_cap(std::string str, Client& cli){
 				return;
 			}
 			cli.set_bool_pass(1);
-			client_sender(cli.GetFd(), ":Server Correct passoword!");
+			client_sender(cli.GetFd(), ":Server Correct password!");
 		} else
 			client_sender(cli.GetFd(), ":Server 464 incorrect password!");  // (": 464 " + nickname + " :Password incorrect !" + CRLF )
 	}
@@ -145,7 +145,7 @@ void Server::sendMsgToClient(int clientFd, std::string message) {
 	std::cout << "Sendind to client ID, " << clientFd << ": " << message << std::endl;
 	if (send(clientFd, message.c_str(), message.length(), 0) < 0) {
 		std::cout << "Error sending message to client" << std::endl;
-		exit(1);
+		return;//exit(1);
 	}
 	message.clear();
 }

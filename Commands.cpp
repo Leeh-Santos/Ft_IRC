@@ -23,6 +23,10 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 		kick_cmd(cli_str, cli);
 	else if(first_word == "mode" || first_word == "MODE")
 		 mode_cmd(cli_str, cli);
+	else if(first_word == "quit" || first_word == "QUIT")
+		 quit_cmd(cli);
+	else if(first_word == "part" || first_word == "PART")
+		 part_cmd(cli_str, cli);
 	else{
 		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + " :Unknown command");
 		std::cout << "first word: " << first_word << "||| string inteira :" << cli_str << std::endl;
@@ -517,4 +521,34 @@ void Server::mode_cmd(std::string cli_str, Client& cli){
 		return;
 		}
 	}
+}
+
+void  Server::quit_cmd(Client& cli){
+	unsigned int i = 0;
+	unsigned int k = 0;
+
+	for(; i < _channels.size() ; i++){
+		for( ;k < _channels[i].getClientsList().size(); k++){
+			if(_channels[i].getClientsList()[k].get_nick() == cli.get_nick())
+				_channels[i].removeClient(cli.get_nick());
+		}
+	}
+}
+
+void  Server::part_cmd(std::string str, Client& cli){
+	std::vector<std::string> cmd = tokenit_please(str, 1);
+
+	if (cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+		return;
+	}
+
+	std::string channel = cmd[1];
+	int index = channel_exists(channel);
+	
+	if (channel_exists(channel) == -1){
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + channel+ " :No such channel");
+		return;
+	}
+	_channels[index].removeClient(cli.get_nick());
 }

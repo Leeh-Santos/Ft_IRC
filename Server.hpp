@@ -99,8 +99,11 @@ public:
 	std::string get_full_msg(std::vector<std::string> cmd, int i);
 	std::string to_string(int value);
 
+	void quit_cmd(Client& cli);
+
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
+	void  Server::part_cmd(std::string str, Client& cli);
 	std::vector<Channel>& getChannels();
 	//void Server::setChannels(const std::vector<Channel>& newChannels);
 };
