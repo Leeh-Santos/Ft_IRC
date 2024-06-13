@@ -12,7 +12,7 @@ class Channel {
 private:
 	std::string				_channelName;
 	std::vector<Client>		_clientsList;
-	std::vector<Client>	_InvCliList;
+	std::vector<Client>		_InvCliList;
 	std::string				_operator;
 	//MODES
 	bool					_inviteOnlyChannelMode;	//"+i" controls whether new users need to be invited to the channel before being able to join

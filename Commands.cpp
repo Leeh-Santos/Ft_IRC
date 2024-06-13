@@ -459,4 +459,62 @@ void Server::mode_cmd(std::string cli_str, Client& cli){
 		sendlMsgToChannel2(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -k " + _channels[index].getchannelPass(), cli);
 		return;
 	}
+	else if ((mode == "o" || mode == "+o"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		std::string newOperator = cmd[3];
+		if (!client_in_channel(cli.get_nick(), index)){
+			sendMsgToClient(cli.GetFd(), ":Server 442 " + cli.get_nick() + " " + chan_name + " :You're not on that channel");
+			return;
+		}
+		if (!client_in_channel(newOperator, index)){
+			sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + newOperator + " " + chan_name + " :They aren't on that channel");
+			return;
+		}
+		if (_channels[index].getOperator() != cli.get_nick()){
+			sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
+			return;
+		}
+		if (!client_in_channel(newOperator, index)){
+		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + newOperator + " :No such nick");
+		return;
+		}
+		if (_channels[index].getOperator() != newOperator){
+		_channels[index].setOperator(newOperator);
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +o " + newOperator);
+		return;
+		}
+	}
+	else if ((mode == "-o"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		std::string currOperator = cmd[3];
+		if (!client_in_channel(cli.get_nick(), index)){
+			sendMsgToClient(cli.GetFd(), ":Server 442 " + cli.get_nick() + " " + chan_name + " :You're not on that channel");
+			return;
+		}
+		if (!client_in_channel(currOperator, index)){
+			sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + currOperator + " " + chan_name + " :They aren't on that channel");
+			return;
+		}
+		if (_channels[index].getOperator() != cli.get_nick()){
+			sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
+			return;
+		}
+		if (!client_in_channel(currOperator, index)){
+		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + currOperator + " :No such nick");
+		return;
+		}
+		if (_channels[index].getOperator() == currOperator){
+		_channels[index].setOperator("");
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -o " + currOperator);
+		return;
+		}
+	}
 }
