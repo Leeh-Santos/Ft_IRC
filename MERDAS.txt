@@ -58,3 +58,6 @@ quem usa o mode k
 >> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste -k pass
 << MODE #teste k pass
 >> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste +k pass
+
+
+trocar nick e canal fudeu

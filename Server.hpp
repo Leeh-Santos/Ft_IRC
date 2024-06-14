@@ -103,7 +103,7 @@ public:
 
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
-	void  Server::part_cmd(std::string str, Client& cli);
+	void  part_cmd(std::string str, Client& cli);
 	std::vector<Channel>& getChannels();
 	//void Server::setChannels(const std::vector<Channel>& newChannels);
 };

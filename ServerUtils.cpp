@@ -61,7 +61,7 @@ void Server::handle_cap(std::string str, Client& cli){
 				return;
 			}
 			cli.set_bool_pass(1);
-			client_sender(cli.GetFd(), ":Server Correct password!");
+			client_sender(cli.GetFd(), "Correct password!");
 		} else
 			client_sender(cli.GetFd(), ":Server 464 incorrect password!");  // (": 464 " + nickname + " :Password incorrect !" + CRLF )
 	}

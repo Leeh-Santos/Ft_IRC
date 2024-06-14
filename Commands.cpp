@@ -34,22 +34,35 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 }
 
 void Server::change_nick(std::string cli_str, Client& cli){
-	std::string nick = cli_str.substr(cli_str.find_first_not_of("nick "));
-	nick = str_cutter(nick); // limpar a string
+
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	std::string nick = cmd[1];
+
+	/*if(cmd.size() < 2){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+		return;
+	}*/
+	
 	if (verify_nicks(nick) != -1){
-		client_sender(cli.GetFd(), ":Server 433 Nick " + nick + " is already in use");
+		client_sender(cli.GetFd(), ":Server 433 Nick " + cli.get_nick() + " " + nick + " :is already in use");
 		return;
 	}
 	if(nick[0] == '#' || nick[0] == ':'){
-		client_sender(cli.GetFd(), ":Server 432 Erroneus nickname");
+		client_sender(cli.GetFd(), ":Server 432 " + cli.get_nick() + " " + nick + " :Erroneus nickname");
 		return;
 	}
 	if(nick.empty())
 		return;
 	if(nick.size() > 10)
 		nick = nick.substr(0, 9);
+	sendlMsgToChannel(_clients, ":" + cli.get_nick() + "!" + cli.get_user() + " NICK :" + nick);
 	cli.set_nick(nick);
-	client_sender(cli.GetFd(), ":Server new NICK succesfully added ->" + cli.get_nick());
+	
+	//client_sender(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@" + " NICK :" + nick);
+	
+	//< NICK lele
+   //>> :Le!Le@E18A0A:DA13C:9E2AD0:3C77BE:IP NICK :lele
 }
 
 std::string Server::str_cutter(std::string str){
