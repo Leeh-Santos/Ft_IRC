@@ -10,7 +10,7 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 	else if (first_word == "user" || first_word == "USER")
 		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + "!" + cli.get_user() + " :Already registered");
 	else if (first_word == "nick" || first_word == "NICK")
-		change_nick(cli_str, cli);
+		return ;//change_nick(cli_str, cli);
 	else if (first_word == "join" || first_word == "JOIN")
 		join_cmd(cli_str, cli);
 	else if (first_word == "PRIVMSG" || first_word == "privmsg")

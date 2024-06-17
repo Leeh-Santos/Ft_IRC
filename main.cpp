@@ -25,16 +25,17 @@ int main(int argc, char *argv[])
 		std::cout << "invalid port" << std::endl;
 		exit(1);
 	}
-	Server ser(port, argv[2]);
+
+	Server server(port, argv[2]);
 	
 	std::cout << "---- SERVER IS ONLINE EVERYONE  ----" << std::endl;
 	try{
-		signal(SIGINT, Server::SignalHandler);
-		signal(SIGQUIT, Server::SignalHandler); 
-		ser.ServerInit(); 
+		signal(SIGINT, Server::inbound_signal);
+		signal(SIGQUIT, Server::inbound_signal); 
+		server.start_Server(); 
 	}
 	catch(const std::exception& e){
-		ser.CloseFds(); 
+		server.CloseFds(); 
 		std::cerr << e.what() << std::endl;
 	}
 	std::cout << "The Server Closed! See you next time!" << std::endl;

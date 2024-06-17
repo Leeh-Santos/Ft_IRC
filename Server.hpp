@@ -48,11 +48,11 @@ public:
 		std::string tmp(pass);
 		_serverPass = tmp;
 	}
-	void		ServerInit();
-	void		SerSocket();
+	void		start_Server();
+	void		ServerSocket();
 	void		AcceptNewClient();
 	void		ReceiveNewData(int fd, Client& cli);
-	static void	SignalHandler(int signum);
+	static void	inbound_signal(int);
 	void		CloseFds();
 	void		ClearClients(int fd);
 
