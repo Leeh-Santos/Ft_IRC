@@ -26,7 +26,7 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 	else if(first_word == "quit" || first_word == "QUIT")
 		 quit_cmd(cli);
 	else if(first_word == "part" || first_word == "PART")
-		 part_cmd(cli_str, cli);
+		 return;//part_cmd(cli_str, cli);
 	else{
 		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + " :Unknown command");
 		std::cout << "first word: " << first_word << "||| string inteira :" << cli_str << std::endl;
@@ -135,7 +135,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 		joinChannel(_channels.size() - 1, cli, channelName, 1);
 	}
 	else {
-		std::cout << "ENTROU: canal ja existe, vamos entrar" << std::endl;
+		std::cout << "channel already exists, lets enter" << std::endl;
 		unsigned int i = channel_exists(channelName); //se tiver o canal channel_exists() devolve o index
 	
 		if (_channels[i].getClientLimitChannelModeAndValue() && _channels[i].getClientsList().size() >= (size_t)_channels[i].getClientLimitChannelModeAndValue()) {
@@ -160,7 +160,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 
 
 	for(unsigned int i = 0 ; i < _channels.size() ; i++)
-		std::cout << "nome do canal" << i << ": " << _channels[i].getChannelName() << std::endl;
+		std::cout << "CHANNEL NAME" << i << ": " << _channels[i].getChannelName() << std::endl;
 	} 
 
 bool Server::verify_channelName(std::string channelName, std::vector<std::string> cmd, Client& cli){

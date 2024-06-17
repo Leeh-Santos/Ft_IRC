@@ -55,6 +55,7 @@ public:
 	static void	inbound_signal(int);
 	void		CloseSocket();
 	void		ClearClients(int fd);
+	void		remove_client(Client &);
 
 	void client_sender(int fd, std::string str){
 	str += "\r\n";
