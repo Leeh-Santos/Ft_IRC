@@ -35,9 +35,9 @@ int main(int argc, char *argv[])
 		server.start_Server(); 
 	}
 	catch(const std::exception& e){
-		server.CloseFds(); 
+		server.CloseSocket(); 
 		std::cerr << e.what() << std::endl;
 	}
-	std::cout << "The Server Closed! See you next time!" << std::endl;
+	std::cout << "Ending server! See you next time!" << std::endl;
 
 }

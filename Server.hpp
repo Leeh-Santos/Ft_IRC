@@ -34,8 +34,8 @@ class Channel;
 class Server
 {
 private:
-	int							_port; //-> server port
-	int							_serSocketFd; //-> server fd
+	int							_port; 
+	int							_serSocketFd; 
 	static bool					_signal;
 	std::vector<Client>			_clients;
 	std::vector<struct pollfd>	_fds;
@@ -51,9 +51,9 @@ public:
 	void		start_Server();
 	void		ServerSocket();
 	void		connectionRequest();
-	void		ReceiveNewData(int fd, Client& cli);
+	void		clientRequest(int fd, Client& cli);
 	static void	inbound_signal(int);
-	void		CloseFds();
+	void		CloseSocket();
 	void		ClearClients(int fd);
 
 	void client_sender(int fd, std::string str){
@@ -75,6 +75,8 @@ public:
 	void		invite_cmd(std::string cli_str, Client &cli);
 	void		mode_cmd(std::string cli_str, Client &cli);
 	void		kick_cmd(std::string cli_str, Client& cli);
+
+	void		set_serverTracker(int);
 
 	std::string	str_cutter(std::string);
 

@@ -21,29 +21,28 @@ void Server::inbound_signal(int sig)
 	Server::_signal = 1;
 }
 
-void	Server::CloseFds(){
-	for(size_t i = 0; i < _clients.size(); i++){ //-> close all the clients
+void	Server::CloseSocket(){
+	for(size_t i = 0; i < _clients.size(); i++){ 
 		std::cout << RED << "Client <" << _clients[i].GetFd() << "> Disconnected" << WHI << std::endl;
 		close(_clients[i].GetFd());
 	}
-	if (_serSocketFd != -1){ //-> close the server socket
+	if (_serSocketFd != -1){ 
 		std::cout << RED << "Server <" << _serSocketFd << "> Disconnected" << WHI << std::endl;
 		close(_serSocketFd);
 	}
 }
 
-void Server::ReceiveNewData(int fd, Client &cli)
+void Server::clientRequest(int fd, Client &cli)
 {
 
 	if (cli.GetFd() == _serSocketFd)
-		std::cout << "deu ruim para localizar o cliente" << std::endl;
+		std::cout << "not able to locate client" << std::endl;
 
 	char buff[1024];
-	memset(buff, 0, sizeof(buff)); //-> clear the buffer to received data
-	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0); //-> receive the data
+	memset(buff, 0, sizeof(buff)); //-> clear the buffer for new msgs
+	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0);
 	std::string in = buff; 
-	//std::cout << "string received ->  " << in; 
-
+	
 	if(bytes <= 0){
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		ClearClients(fd);
@@ -80,7 +79,6 @@ void Server::connectionRequest()
 {
 	Client cli; //-> create a new client, f** norminette constructor = connectionRequest()
 	struct sockaddr_in socket_info;
-	struct pollfd NewPoll;
 	socklen_t len = sizeof(socket_info);
 
 	int cli_fd = accept(_serSocketFd, (sockaddr *)&(socket_info), &len); //-> accept the new client
@@ -90,9 +88,7 @@ void Server::connectionRequest()
 	if (fcntl(cli_fd, F_SETFL, O_NONBLOCK) == -1) //-> set the socket option (O_NONBLOCK) for non-blocking socket
 		{std::cout << "fcntl() function failed" << std::endl; return;}
 
-	NewPoll.fd = cli_fd; //-> add the client socket to the pollfd
-	NewPoll.events = POLLIN; //pollin = reading data
-	NewPoll.revents = 0; //-> set the revents to 0
+	set_serverTracker(cli_fd);
 
 	cli.SetFd(cli_fd); //-> set the client file descriptor
 	cli.setIpAdd(inet_ntoa((socket_info.sin_addr))); //-> convert the ip address to string and set it
@@ -101,9 +97,7 @@ void Server::connectionRequest()
 	cli.set_bool_pass(0);
 	cli.set_nick("");
 	cli.set_buffer("");
-
 	_clients.push_back(cli); //-> add the client to the vector of clients
-	_fds.push_back(NewPoll); //-> add the client socket to the pollfd
 
 	std::cout << GRE << "Client <" << cli_fd << "> Connected" << WHI << std::endl;
 }
@@ -112,7 +106,6 @@ void Server::ServerSocket()
 {
 	int en = 1;
 	struct sockaddr_in socket_info;
-	struct pollfd NewPoll;
 	socket_info.sin_family = AF_INET; //->  ipv4
 	socket_info.sin_addr.s_addr = INADDR_ANY; //-> any local host address
 	socket_info.sin_port = htons(this->_port); //-> convert the port to network byte order (big endian)
@@ -129,10 +122,16 @@ void Server::ServerSocket()
 	if (listen(_serSocketFd, SOMAXCONN) == -1) //-> listen for incoming connections and making the socket a passive socket
 		throw(std::runtime_error("listen() faild"));
 
-	NewPoll.fd = _serSocketFd; //-> add the server socket to the pollfd
-	NewPoll.events = POLLIN; //-> set the event to POLLIN for reading data
-	NewPoll.revents = 0; //-> set the revents to 0
-	_fds.push_back(NewPoll); //-> add the server socket to the pollfd
+	set_serverTracker(_serSocketFd);
+	
+}
+
+void	Server::set_serverTracker(int fd){
+	struct pollfd NewPoll;
+	NewPoll.fd = fd; 
+	NewPoll.events = POLLIN; 
+	NewPoll.revents = 0; 
+	_fds.push_back(NewPoll); 
 }
 
 Client& Server::get_client(int fd, std::vector<Client>& cli){
@@ -147,7 +146,7 @@ Client& Server::get_client(int fd, std::vector<Client>& cli){
 void Server::start_Server()
 {
 	std::cout << "Server Password :" << _serverPass << std::endl;
-	ServerSocket(); //-> create the server socket
+	ServerSocket(); 
 	std::cout << GRE << "Server <" << _serSocketFd << "> Connected" << WHI << std::endl;
 	std::cout << "listening and waiting to accept a connection...\n";
 
@@ -161,11 +160,11 @@ void Server::start_Server()
 				if (_fds[i].fd == _serSocketFd) // se alteracao foi no fd do server entao so aceitamos
 					connectionRequest();
 				else
-					ReceiveNewData(_fds[i].fd, get_client(_fds[i].fd, _clients)); //get_client devolve o cliente obj para modificarmos
+					clientRequest(_fds[i].fd, get_client(_fds[i].fd, _clients)); //get_client devolve o cliente obj para modificarmos
 			}
 		}
 	}
-	CloseFds();
+	CloseSocket();
 }
 
 
