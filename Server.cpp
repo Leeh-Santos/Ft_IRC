@@ -76,9 +76,9 @@ void Server::ReceiveNewData(int fd, Client &cli)
 
 }
 
-void Server::AcceptNewClient()
+void Server::connectionRequest()
 {
-	Client cli; //-> create a new client, f** norminette constructor = AcceptNewClient()
+	Client cli; //-> create a new client, f** norminette constructor = connectionRequest()
 	struct sockaddr_in socket_info;
 	struct pollfd NewPoll;
 	socklen_t len = sizeof(socket_info);
@@ -159,7 +159,7 @@ void Server::start_Server()
 		for (size_t i = 0; i < _fds.size(); i++){ //-> check all file descriptors
 			if (_fds[i].revents & POLLIN){ //-> check if there is data to read
 				if (_fds[i].fd == _serSocketFd) // se alteracao foi no fd do server entao so aceitamos
-					AcceptNewClient();
+					connectionRequest();
 				else
 					ReceiveNewData(_fds[i].fd, get_client(_fds[i].fd, _clients)); //get_client devolve o cliente obj para modificarmos
 			}

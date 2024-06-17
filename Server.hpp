@@ -50,7 +50,7 @@ public:
 	}
 	void		start_Server();
 	void		ServerSocket();
-	void		AcceptNewClient();
+	void		connectionRequest();
 	void		ReceiveNewData(int fd, Client& cli);
 	static void	inbound_signal(int);
 	void		CloseFds();
