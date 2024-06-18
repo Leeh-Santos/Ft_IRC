@@ -47,6 +47,8 @@ public:
 		_port = port;
 		std::string tmp(pass);
 		_serverPass = tmp;
+		std::cout << "server pass :" << _serverPass << std::endl;
+		std::cout << "tmp :" << tmp << std::endl;
 	}
 	void		start_Server();
 	void		ServerSocket();

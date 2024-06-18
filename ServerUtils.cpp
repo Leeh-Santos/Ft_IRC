@@ -100,8 +100,12 @@ void Server::handle_cap(std::string str, Client& cli){
 }
 void Server::handle_nc(std::string str, Client& cli){
 		if (str.find("pass ") != std::string::npos){
-			str = str.substr(str.find_first_not_of("pass "));
-			str = str.substr(0, str.find('\n')); // nc sends /n nesse caralho
+			std::vector<std::string> in = tokenit_please(str, 1);
+			if (in.size() < 2)
+				return ;
+			str = in[1];
+			std::cout << "str :" << str << std::endl;
+			std::cout << "_serverPass :" << _serverPass << std::endl;
 			if (cli.get_bool_pass()){
 				client_sender(cli.GetFd(), ":Server 462 Already registered");
 				return;
