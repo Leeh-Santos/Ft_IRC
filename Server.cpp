@@ -46,7 +46,8 @@ void Server::clientRequest(int fd, Client &cli)
 	if(bytes <= 0){
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
 		ClearClients(fd);
-		remove_client(cli);
+		quit_cmd(cli);
+		//remove_client(cli); already in quit_cmd()
 		close(fd);
 	}
 	else if (!cli.is_verified()){
@@ -77,25 +78,30 @@ void Server::clientRequest(int fd, Client &cli)
 }
 
 void Server::remove_client(Client& cli){
-	std::vector<Client>::iterator it = _clients.begin();
+	/*std::vector<Client>::iterator it = _clients.begin();
 
 	for(; it != _clients.end(); it++){
 		if(it->get_nick() == cli.get_nick()){
 			_clients.erase(it);
 			break;
 		}
-	}
+	}*/
 
-	std::vector<Channel>::iterator it2 = _channels.begin();
-
-	for (; it2 != _channels.end() ; it2++){
-		std::vector<Client>::iterator it3 = it2->getClientsList().begin();
-		for(; it3 != it2->getClientsList().end() ; it3++){
-			if(it3->get_nick() == cli.get_nick()){
-				it2->getClientsList().erase(it3);
-			}
+	for (std::vector<Client>::iterator i = this->_clients.begin(); i != this->_clients.end(); i++)
+	{
+		if (i->GetFd() == cli.GetFd())
+		{
+			this->_clients.erase(i);
+			break;
 		}
-
+	}
+	for (std::vector<struct pollfd>::iterator i = this->_fds.begin(); i != this->_fds.end(); i++)
+	{
+		if (i->fd == cli.GetFd())
+		{
+			this->_fds.erase(i);
+			break;
+		}
 	}
 
 }

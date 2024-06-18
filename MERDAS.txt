@@ -61,3 +61,17 @@ quem usa o mode k
 
 
 trocar nick e canal fudeu
+
+
+
+
+
+
+
+nao ta saindo do canal, conflitos com mesmo nome
+
+depois de sair nao manda para o mesmo e nc explode,
+
+ver se o os getters estao a manda referencia
+
+quando um sai assume a mesma coisa

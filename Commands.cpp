@@ -24,7 +24,7 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 	else if(first_word == "mode" || first_word == "MODE")
 		 mode_cmd(cli_str, cli);
 	else if(first_word == "quit" || first_word == "QUIT")
-		 quit_cmd(cli);
+		 return; //quit_cmd(cli);
 	else if(first_word == "part" || first_word == "PART")
 		 return;//part_cmd(cli_str, cli);
 	else{
@@ -546,6 +546,7 @@ void  Server::quit_cmd(Client& cli){
 				_channels[i].removeClient(cli.get_nick());
 		}
 	}
+	remove_client(cli);
 }
 
 void  Server::part_cmd(std::string str, Client& cli){
