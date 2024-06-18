@@ -45,8 +45,8 @@ void Server::clientRequest(int fd, Client &cli)
 	
 	if(bytes <= 0){
 		std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
-		ClearClients(fd);
 		quit_cmd(cli);
+		ClearClients(fd);
 		//remove_client(cli); already in quit_cmd()
 		close(fd);
 	}
@@ -95,14 +95,14 @@ void Server::remove_client(Client& cli){
 			break;
 		}
 	}
-	for (std::vector<struct pollfd>::iterator i = this->_fds.begin(); i != this->_fds.end(); i++)
+	/*for (std::vector<struct pollfd>::iterator i = this->_fds.begin(); i != this->_fds.end(); i++)
 	{
 		if (i->fd == cli.GetFd())
 		{
 			this->_fds.erase(i);
 			break;
 		}
-	}
+	}*/
 
 }
 

@@ -75,3 +75,5 @@ depois de sair nao manda para o mesmo e nc explode,
 ver se o os getters estao a manda referencia
 
 quando um sai assume a mesma coisa? primeiro aparece already in channel depois so se dar reconnect
+
+tamo mandando o cliente certo? ver se ta cortando outra conexao, as vezes nc vai junto

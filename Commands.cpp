@@ -24,7 +24,7 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 	else if(first_word == "mode" || first_word == "MODE")
 		 mode_cmd(cli_str, cli);
 	else if(first_word == "quit" || first_word == "QUIT")
-		 return; //quit_cmd(cli);
+		quit_cmd(cli);
 	else if(first_word == "part" || first_word == "PART")
 		 return;//part_cmd(cli_str, cli);
 	else{
@@ -86,7 +86,6 @@ void	Server::joinChannel(int i, Client& cli, std::string channelName, int adm_fl
 		//sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName  + "\r\n");
 		//sendMsgToClient(cli.GetFd(), ":@localhost 324 " + cli.get_nick() + " " + channelName + " +" + _channels[i].getOperator() + "\r\n"); //genereted by autopilot
 	}
-	//else BROAD CAST ou manda outra mensagem ou ja ta?
 
 }
 
@@ -126,7 +125,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 	if (!verify_channelName(channelName, cmd, cli))
 		return;
 	else if(channel_exists(channelName) == -1){ // se nao exite criamos, -1 nao temos canal
-		std::cout << "ENTROU: canal sendo criado" << std::endl;
+		std::cout << "CHANNEL IS BEING CREATE" << std::endl;
 		this->_channels.push_back(Channel(channelName));//destructor called porque ta aparecendo aqui?
 		std::cout << " destructors sendo chamados agora: " << std::endl;
 		Channel& newChannel = _channels.back(); 
@@ -135,7 +134,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 		joinChannel(_channels.size() - 1, cli, channelName, 1);
 	}
 	else {
-		std::cout << "channel already exists, lets enter" << std::endl;
+		std::cout << "CHANNEL ALREADY EXISTS, LETS ENTER" << std::endl;
 		unsigned int i = channel_exists(channelName); //se tiver o canal channel_exists() devolve o index
 	
 		if (_channels[i].getClientLimitChannelModeAndValue() && _channels[i].getClientsList().size() >= (size_t)_channels[i].getClientLimitChannelModeAndValue()) {
@@ -546,7 +545,10 @@ void  Server::quit_cmd(Client& cli){
 				_channels[i].removeClient(cli.get_nick());
 		}
 	}
-	remove_client(cli);
+
+	//ClearClients(cli.GetFd());
+	//close(cli.GetFd());
+	//remove_client(cli);
 }
 
 void  Server::part_cmd(std::string str, Client& cli){
