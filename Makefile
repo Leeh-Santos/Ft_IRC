@@ -2,24 +2,25 @@ SRCS		= main.cpp \
 			Server.cpp \
 			Client.cpp \
 			ServerUtils.cpp \
-			commands.cpp \
-			
+			Commands.cpp \
+			Channel.cpp
+
 OBJS		= $(SRCS:.cpp=.o)
 
 CXX			= c++
 
-CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 
+CXXFLAGS	= -Wall -Wextra -Werror -std=c++98 -g
 
 NAME		= ft_irc
 
 all: $(NAME)
 
-$(NAME): $(OBJS) 
-		$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) -fsanitize=address -g
+$(NAME): $(OBJS)
+		$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) #-fsanitize=address -g
 
 RM		= rm -rf
 
-clean: 
+clean:
 	$(RM) $(OBJS)
 
 fclean:

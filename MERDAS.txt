@@ -6,7 +6,74 @@ JOIN #a -- RECEBE COM ASTERISCO
 olhar as mensagens do pass nick e user vindo do server
 
 questions :
-pare que serve o 0 * realname?
-se o fdp faz errado o cap, que vces fazem?
-formato da msg de atualizacao do hex?
-testar com o CAP cagadp
+
+entrada do nc/entrada no hex   --> a entrada pelo nc com o /
+
+essa merda fica mandando MODE #a e WHO #a depois de c
+
+destructor called? 
+
+mensagens de error tinham que apacer no canal?-----------joga o exclamacao para funcionar, E SEM A POHA DO ARROBA, ARROBA joga no new network
+
+oque fazer com string recebida dentro do canal PRIVMSG? recebe como PRIVMSG #(nomedocanal) :(mensagen)
+
+MUST IMPLEMENT:
+
+trocou o nick oque faz depois?? NICK TEM QUE TROCAR NO HEX
+
+-quando entrar no canal:
+* Now talking on #a
+* Topic for #a is: 
+
+como tira o GARBAGE:?
+como atualizar o nome do nicl?
+
+explodui ao mandar: PRIVMSG asdasd
+function msg to chanel ta enviado para o sender
+
+:lea!learodri@F456A.75198A.60D2B2.ADA236.IP PRIVMSG #a :asdasd
+
+
+:lea!learodri@F456A.75198A.60D2B2.ADA236.IP PRIVMSG leas :chama
+
+:leas!learodri@F456A.75198A.60D2B2.ADA236.IP PRIVMSG lea :asd
+
+
+CUIDADO COM FORMATACOES DA MSG PELO tokenit_please E PELA ENTRADA
+
+
+MODE MANDA MSG PARA A POHA TODA
+
+fazer quit para qnd fechar hexchat nao dar pau
+
+usar ip 10.12.2.3
+
+
+pra quem ta na sala
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste -k pass
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste +k pass
+
+quem usa o mode k
+<< MODE #teste -k pass
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste -k pass
+<< MODE #teste k pass
+>> :caraio!caraio@AN-A795207B.226.108.93.rev.vodafone.pt MODE #teste +k pass
+
+
+trocar nick e canal fudeu
+
+
+
+
+
+
+
+nao ta saindo do canal, conflitos com mesmo nome
+
+depois de sair nao manda para o mesmo e nc explode,
+
+ver se o os getters estao a manda referencia
+
+quando um sai assume a mesma coisa? primeiro aparece already in channel depois so se dar reconnect
+
+tamo mandando o cliente certo? ver se ta cortando outra conexao, as vezes nc vai junto

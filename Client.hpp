@@ -1,9 +1,9 @@
-#pragma once
-
-//#ifndef CLIENT_HPP
-//#define CLIENT_HPP
+//#pragma once
+#ifndef CLIENT_HPP
+# define CLIENT_HPP
 # include "Server.hpp"
 # include <string>
+# include <vector>
 
 class Server;
 
@@ -14,10 +14,10 @@ private:
 	std::string IPadd; //-> client ip address
 
 	std::string _buffer;
-	bool pass;
-	std::string nick;
-	std::string user;
-	bool verified;
+	std::string _nick;
+	std::string _user;
+	bool		_verified;
+	bool		_pass;
 
 public:
 	Client(){}; //-> default constructor
@@ -36,6 +36,8 @@ public:
 	std::string get_user();
 	void set_bool_pass(int x);
 	int get_bool_pass();
+
+	void refresh_buffer();
 };
 
-//# endif
+#endif
