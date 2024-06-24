@@ -15,7 +15,7 @@ void Server::validate_cli(Client& cli){
 	}
 	else if (cli.get_nick() != "" && cli.get_user() != "" && cli.get_bool_pass() != 0) {
 		cli.set_verified(1);
-		client_sender(cli.GetFd(), "Welcome to IRC SERVER meu Parceiro");
+		client_sender(cli.GetFd(), "Welcome to IRC SERVER meu Parceiro, PLEASE USE HEXCHAT(OUR IRC CLIENT) SYNTAX");
 	}
 }
 
@@ -61,7 +61,7 @@ void Server::handle_cap(std::string str, Client& cli){
 				return;
 			}
 			cli.set_bool_pass(1);
-			client_sender(cli.GetFd(), ":Server Correct passoword!");
+			client_sender(cli.GetFd(), "Correct password!");
 		} else
 			client_sender(cli.GetFd(), ":Server 464 incorrect password!");  // (": 464 " + nickname + " :Password incorrect !" + CRLF )
 	}
@@ -100,8 +100,12 @@ void Server::handle_cap(std::string str, Client& cli){
 }
 void Server::handle_nc(std::string str, Client& cli){
 		if (str.find("pass ") != std::string::npos){
-			str = str.substr(str.find_first_not_of("pass "));
-			str = str.substr(0, str.find('\n')); // nc sends /n nesse caralho
+			std::vector<std::string> in = tokenit_please(str, 1);
+			if (in.size() < 2)
+				return ;
+			str = in[1];
+			std::cout << "str :" << str << std::endl;
+			std::cout << "_serverPass :" << _serverPass << std::endl;
 			if (cli.get_bool_pass()){
 				client_sender(cli.GetFd(), ":Server 462 Already registered");
 				return;
@@ -145,7 +149,7 @@ void Server::sendMsgToClient(int clientFd, std::string message) {
 	std::cout << "Sendind to client ID, " << clientFd << ": " << message << std::endl;
 	if (send(clientFd, message.c_str(), message.length(), 0) < 0) {
 		std::cout << "Error sending message to client" << std::endl;
-		exit(1);
+		return;//exit(1);
 	}
 	message.clear();
 }

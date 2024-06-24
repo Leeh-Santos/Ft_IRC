@@ -21,3 +21,7 @@ std::string Client::get_user() {return _user;}
 void Client::set_bool_pass(int x) {_pass = x;}
 
 int Client::get_bool_pass() {return _pass;}
+
+void Client::refresh_buffer(){
+    _buffer.clear();
+}

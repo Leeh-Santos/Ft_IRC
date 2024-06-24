@@ -34,8 +34,8 @@ class Channel;
 class Server
 {
 private:
-	int							_port; //-> server port
-	int							_serSocketFd; //-> server fd
+	int							_port; 
+	int							_serSocketFd; 
 	static bool					_signal;
 	std::vector<Client>			_clients;
 	std::vector<struct pollfd>	_fds;
@@ -47,14 +47,17 @@ public:
 		_port = port;
 		std::string tmp(pass);
 		_serverPass = tmp;
+		std::cout << "server pass :" << _serverPass << std::endl;
+		std::cout << "tmp :" << tmp << std::endl;
 	}
-	void		ServerInit();
-	void		SerSocket();
-	void		AcceptNewClient();
-	void		ReceiveNewData(int fd, Client& cli);
-	static void	SignalHandler(int signum);
-	void		CloseFds();
+	void		start_Server();
+	void		ServerSocket();
+	void		connectionRequest();
+	void		clientRequest(int fd, Client& cli);
+	static void	inbound_signal(int);
+	void		CloseSocket();
 	void		ClearClients(int fd);
+	void		remove_client(Client &);
 
 	void client_sender(int fd, std::string str){
 	str += "\r\n";
@@ -75,6 +78,8 @@ public:
 	void		invite_cmd(std::string cli_str, Client &cli);
 	void		mode_cmd(std::string cli_str, Client &cli);
 	void		kick_cmd(std::string cli_str, Client& cli);
+
+	void		set_serverTracker(int);
 
 	std::string	str_cutter(std::string);
 
@@ -99,8 +104,11 @@ public:
 	std::string get_full_msg(std::vector<std::string> cmd, int i);
 	std::string to_string(int value);
 
+	void quit_cmd(Client& cli);
+
 	//GETTERS AND SETTERS
 	Client& get_client(int fd, std::vector<Client>&);
+	void  part_cmd(std::string str, Client& cli);
 	std::vector<Channel>& getChannels();
 	//void Server::setChannels(const std::vector<Channel>& newChannels);
 };

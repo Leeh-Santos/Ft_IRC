@@ -50,7 +50,7 @@ void 	Channel::removeClient(std::string target){
 	std::vector<Client>::iterator it;
 	for (it = _InvCliList.begin(); it != _InvCliList.end(); ++it){
 		if ((it)->get_nick() == target){
-			_clientsList.erase(it);
+			_InvCliList.erase(it);
 			break;
 		}
 	}

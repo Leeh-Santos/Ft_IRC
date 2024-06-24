@@ -10,7 +10,7 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 	else if (first_word == "user" || first_word == "USER")
 		sendMsgToClient(cli.GetFd(), ":Server 462 " + cli.get_nick() + "!" + cli.get_user() + " :Already registered");
 	else if (first_word == "nick" || first_word == "NICK")
-		change_nick(cli_str, cli);
+		return ;//change_nick(cli_str, cli);
 	else if (first_word == "join" || first_word == "JOIN")
 		join_cmd(cli_str, cli);
 	else if (first_word == "PRIVMSG" || first_word == "privmsg")
@@ -23,6 +23,10 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 		kick_cmd(cli_str, cli);
 	else if(first_word == "mode" || first_word == "MODE")
 		 mode_cmd(cli_str, cli);
+	else if(first_word == "quit" || first_word == "QUIT")
+		quit_cmd(cli);
+	else if(first_word == "part" || first_word == "PART")
+		 return;//part_cmd(cli_str, cli);
 	else{
 		sendMsgToClient(cli.GetFd(), ":Server 421 " + cli.get_nick() + " " + first_word + " :Unknown command");
 		std::cout << "first word: " << first_word << "||| string inteira :" << cli_str << std::endl;
@@ -30,22 +34,35 @@ void Server::cmd_execute(std::string cli_str, Client& cli) {
 }
 
 void Server::change_nick(std::string cli_str, Client& cli){
-	std::string nick = cli_str.substr(cli_str.find_first_not_of("nick "));
-	nick = str_cutter(nick); // limpar a string
+
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	std::string nick = cmd[1];
+
+	/*if(cmd.size() < 2){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+		return;
+	}*/
+	
 	if (verify_nicks(nick) != -1){
-		client_sender(cli.GetFd(), ":Server 433 Nick " + nick + " is already in use");
+		client_sender(cli.GetFd(), ":Server 433 Nick " + cli.get_nick() + " " + nick + " :is already in use");
 		return;
 	}
 	if(nick[0] == '#' || nick[0] == ':'){
-		client_sender(cli.GetFd(), ":Server 432 Erroneus nickname");
+		client_sender(cli.GetFd(), ":Server 432 " + cli.get_nick() + " " + nick + " :Erroneus nickname");
 		return;
 	}
 	if(nick.empty())
 		return;
 	if(nick.size() > 10)
 		nick = nick.substr(0, 9);
+	sendlMsgToChannel(_clients, ":" + cli.get_nick() + "!" + cli.get_user() + " NICK :" + nick);
 	cli.set_nick(nick);
-	client_sender(cli.GetFd(), ":Server new NICK succesfully added ->" + cli.get_nick());
+	
+	//client_sender(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@" + " NICK :" + nick);
+	
+	//< NICK lele
+   //>> :Le!Le@E18A0A:DA13C:9E2AD0:3C77BE:IP NICK :lele
 }
 
 std::string Server::str_cutter(std::string str){
@@ -69,17 +86,16 @@ void	Server::joinChannel(int i, Client& cli, std::string channelName, int adm_fl
 		//sendlMsgToChannel(_channels[i].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " JOIN " + channelName  + "\r\n");
 		//sendMsgToClient(cli.GetFd(), ":@localhost 324 " + cli.get_nick() + " " + channelName + " +" + _channels[i].getOperator() + "\r\n"); //genereted by autopilot
 	}
-	//else BROAD CAST ou manda outra mensagem ou ja ta?
 
 }
 
 void	Server::checkPassJoinOrReturn(int i, Client& cli, std::string channelName, std::string pass)
 {
-	if (_channels[i].getchannelPass().empty()) {		//Se ha pass
+	if (!_channels[i].getchannelPass().empty()) {		//Se ha pass
 		if (pass == _channels[i].getchannelPass())			//E se pass correcta
 			joinChannel(i, cli, channelName, 0);
 		else {											//Se pass e esta incorrecta
-			sendMsgToClient(cli.GetFd(), ":@localhost 475 " + cli.get_nick() + " " + channelName + " :Bad channel password");
+			sendMsgToClient(cli.GetFd(), ":Server 475 " + cli.get_nick() + " " + channelName + " :Cannot join channel (+k)");
 			return ;
 		}
 	}
@@ -87,21 +103,30 @@ void	Server::checkPassJoinOrReturn(int i, Client& cli, std::string channelName, 
 		joinChannel(i, cli, channelName, 0);
 }
 
+/*
+<< JOIN #teste
+>> :Aurora.AfterNET.Org PONG Aurora.AfterNET.Org :LAG1718174740045
+>> :Aurora.AfterNET.Org 475 caraioo #teste :Cannot join channel (+k)
+<< JOIN #teste ola
+>> :Aurora.AfterNET.Org 475 caraioo #teste :Cannot join channel (+k)
+*/
+
 void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n  join #asdasdas /r/n /join #a
 	std::cout << " nao ta entrando" << std::endl;
 
 	//cuidado em pass var, para nao dar merda se so mandarem poucos args tipo /join #asdasd
 	std::vector<std::string> cmd = tokenit_please(cmd_line, 1);
 	std::string channelName = cmd[1];
-	std::string  pass = cmd[2];
-
+	std::string pass = "";
+	if (cmd.size() > 2)
+		pass = cmd[2];
 	std::cout << "Channel name string: " << channelName << std::endl;
 	std::cout << "Channel pass string: " << pass << std::endl;
 
 	if (!verify_channelName(channelName, cmd, cli))
 		return;
 	else if(channel_exists(channelName) == -1){ // se nao exite criamos, -1 nao temos canal
-		std::cout << "ENTROU: canal sendo criado" << std::endl;
+		std::cout << "CHANNEL IS BEING CREATE" << std::endl;
 		this->_channels.push_back(Channel(channelName));//destructor called porque ta aparecendo aqui?
 		std::cout << " destructors sendo chamados agora: " << std::endl;
 		Channel& newChannel = _channels.back(); 
@@ -110,7 +135,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 		joinChannel(_channels.size() - 1, cli, channelName, 1);
 	}
 	else {
-		std::cout << "ENTROU: canal ja existe, vamos entrar" << std::endl;
+		std::cout << "CHANNEL ALREADY EXISTS, LETS ENTER" << std::endl;
 		unsigned int i = channel_exists(channelName); //se tiver o canal channel_exists() devolve o index
 	
 		if (_channels[i].getClientLimitChannelModeAndValue() && _channels[i].getClientsList().size() >= (size_t)_channels[i].getClientLimitChannelModeAndValue()) {
@@ -135,7 +160,7 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 
 
 	for(unsigned int i = 0 ; i < _channels.size() ; i++)
-		std::cout << "nome do canal" << i << ": " << _channels[i].getChannelName() << std::endl;
+		std::cout << "CHANNEL NAME" << i << ": " << _channels[i].getChannelName() << std::endl;
 	} 
 
 bool Server::verify_channelName(std::string channelName, std::vector<std::string> cmd, Client& cli){
@@ -203,7 +228,7 @@ int Server::channel_exists(std::string channelName){
 
 int Server::check_invite_list(int i, Client& cli){
 	unsigned int x = 0;
-		for (; _channels[i].getInvCliList().size() ; x++){
+		for (; x < _channels[i].getInvCliList().size() ; x++){
 			if (_channels[i].getInvCliList()[x].get_nick() == cli.get_nick()){
 					return x;
 				}
@@ -324,47 +349,6 @@ void Server::invite_cmd(std::string cli_str, Client &cli){
 		sendMsgToClient(_clients[nick_index].GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " INVITE " + nick + " " + chan_name);
 	}
 
-void Server::mode_cmd(std::string cli_str, Client& cli){
-	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
-
-	if (cmd.size() < 3){
-		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
-		return;
-	}
-	std::string chan_name = cmd[1];
-	std::string mode = cmd[2];
-	int index = channel_exists(chan_name);
-	if (index == -1){
-		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + chan_name + " :No such channel");
-		return;
-	}
-	if (_channels[index].getOperator() != cli.get_nick())
-	{
-		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
-		return;
-	}
-	else if ((mode == "+i" || mode == "i") && !_channels[index].getInviteOnlyChannelMode()){
-		_channels[index].setInviteOnlyChannelMode(true);
-		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +i");
-		return;
-	}
-	else if ((mode == "-i") && _channels[index].getInviteOnlyChannelMode()){
-		_channels[index].setInviteOnlyChannelMode(false);
-		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -i");
-		return;
-	}
-	else if ((mode == "+t" || mode == "t") && !_channels[index].getTopicMode()){
-		_channels[index].setTopicMode(true);
-		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +t");
-		return;
-	}
-	else if ((mode == "-t") && _channels[index].getTopicMode()){
-		_channels[index].setTopicMode(false);
-		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -t");
-		return;
-	}
-}
-
 void Server::kick_cmd(std::string cli_str, Client& cli){ //KICK #a lean2     KICK #b lean2 :asdasdasd asd sdf
 
 	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
@@ -404,4 +388,184 @@ void Server::kick_cmd(std::string cli_str, Client& cli){ //KICK #a lean2     KIC
 		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + " KICK " + channelName + " " + target + " " + msg);
 		_channels[index].removeClient(target);
 	}
+}
+
+void Server::mode_cmd(std::string cli_str, Client& cli){
+	std::vector<std::string> cmd = tokenit_please(cli_str, 1);
+
+	if (cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+		return;
+	}
+	std::string chan_name = cmd[1];
+	std::string mode = cmd[2];
+	int index = channel_exists(chan_name);
+	if (index == -1){
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + chan_name + " :No such channel");
+		return;
+	}
+	if (_channels[index].getOperator() != cli.get_nick())
+	{
+		sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
+		return;
+	}
+	else if ((mode == "+i" || mode == "i") && !_channels[index].getInviteOnlyChannelMode()){
+		_channels[index].setInviteOnlyChannelMode(true);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +i");
+		return;
+	}
+	else if ((mode == "-i") && _channels[index].getInviteOnlyChannelMode()){
+		_channels[index].setInviteOnlyChannelMode(false);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -i");
+		return;
+	}
+	else if ((mode == "+t" || mode == "t") && !_channels[index].getTopicMode()){
+		_channels[index].setTopicMode(true);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +t");
+		return;
+	}
+	else if ((mode == "-t") && _channels[index].getTopicMode()){
+		_channels[index].setTopicMode(false);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -t");
+		return;
+	}
+	else if ((mode == "+l" || mode == "l"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		int limit = atoi(cmd[3].c_str());
+		if ((limit != _channels[index].getClientLimitChannelModeAndValue()) && limit > 0)
+		{
+		_channels[index].setClientLimitChannelModeAndValue(limit);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +l " + to_string(limit));
+		return;
+		}
+	}
+	else if ((mode == "-l") && _channels[index].getClientLimitChannelModeAndValue())
+	{
+		_channels[index].setClientLimitChannelModeAndValue(0);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -l");
+		return;
+	}
+	else if ((mode == "+k" || mode == "k"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		std::string pass = cmd[3];
+		if(!_channels[index].getchannelPass().empty())
+		{
+		sendMsgToClient(cli.GetFd(), ":Server 467 " + cli.get_nick() + " " + chan_name + " :Channel key is already set");
+		return;
+		}
+		if (_channels[index].getchannelPass().empty())
+		{
+		_channels[index].setchannelPass(pass);
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +k " + pass);
+		sendlMsgToChannel2(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +k " + pass, cli);
+		return;
+		}
+	}
+	else if ((mode == "-k") && !_channels[index].getchannelPass().empty() && cmd[3] == _channels[index].getchannelPass())
+	{
+		_channels[index].setchannelPass("");
+		sendMsgToClient(cli.GetFd(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -k " + _channels[index].getchannelPass());
+		sendlMsgToChannel2(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -k " + _channels[index].getchannelPass(), cli);
+		return;
+	}
+	else if ((mode == "o" || mode == "+o"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		std::string newOperator = cmd[3];
+		if (!client_in_channel(cli.get_nick(), index)){
+			sendMsgToClient(cli.GetFd(), ":Server 442 " + cli.get_nick() + " " + chan_name + " :You're not on that channel");
+			return;
+		}
+		if (!client_in_channel(newOperator, index)){
+			sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + newOperator + " " + chan_name + " :They aren't on that channel");
+			return;
+		}
+		if (_channels[index].getOperator() != cli.get_nick()){
+			sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
+			return;
+		}
+		if (!client_in_channel(newOperator, index)){
+		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + newOperator + " :No such nick");
+		return;
+		}
+		if (_channels[index].getOperator() != newOperator){
+		_channels[index].setOperator(newOperator);
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " +o " + newOperator);
+		return;
+		}
+	}
+	else if ((mode == "-o"))
+	{
+		if (cmd.size() < 4){
+			sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " MODE :Not enough parameters");
+			return;
+		}
+		std::string currOperator = cmd[3];
+		if (!client_in_channel(cli.get_nick(), index)){
+			sendMsgToClient(cli.GetFd(), ":Server 442 " + cli.get_nick() + " " + chan_name + " :You're not on that channel");
+			return;
+		}
+		if (!client_in_channel(currOperator, index)){
+			sendMsgToClient(cli.GetFd(), ":Server 441 " + cli.get_nick() + " " + currOperator + " " + chan_name + " :They aren't on that channel");
+			return;
+		}
+		if (_channels[index].getOperator() != cli.get_nick()){
+			sendMsgToClient(cli.GetFd(), ":Server 482 " + cli.get_nick() + " " + chan_name + " :You're not channel operator");
+			return;
+		}
+		if (!client_in_channel(currOperator, index)){
+		sendMsgToClient(cli.GetFd(), ":Server 401 " + cli.get_nick() + " " + currOperator + " :No such nick");
+		return;
+		}
+		if (_channels[index].getOperator() == currOperator){
+		_channels[index].setOperator("");
+		sendlMsgToChannel(_channels[index].getClientsList(), ":" + cli.get_nick() + "!" + cli.get_user() + "@localhost" + " MODE " + chan_name + " -o " + currOperator);
+		return;
+		}
+	}
+}
+
+void  Server::quit_cmd(Client& cli){
+	unsigned int i = 0;
+	unsigned int k = 0;
+
+	for(; i < _channels.size() ; i++){
+		for( ;k < _channels[i].getClientsList().size(); k++){
+			if(_channels[i].getClientsList()[k].get_nick() == cli.get_nick())
+				_channels[i].removeClient(cli.get_nick());
+		}
+	}
+
+	//ClearClients(cli.GetFd());
+	//close(cli.GetFd());
+	//remove_client(cli);
+}
+
+void  Server::part_cmd(std::string str, Client& cli){
+	std::vector<std::string> cmd = tokenit_please(str, 1);
+
+	if (cmd.size() < 3){
+		sendMsgToClient(cli.GetFd(), ":Server 461 " + cli.get_nick() + " :Not enough parameters");
+		return;
+	}
+
+	std::string channel = cmd[1];
+	int index = channel_exists(channel);
+	
+	if (channel_exists(channel) == -1){
+		sendMsgToClient(cli.GetFd(), ":Server 403 " + cli.get_nick() + " " + channel+ " :No such channel");
+		return;
+	}
+	_channels[index].removeClient(cli.get_nick());
 }
