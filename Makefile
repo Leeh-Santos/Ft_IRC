@@ -16,7 +16,7 @@ NAME		= ft_irc
 all: $(NAME)
 
 $(NAME): $(OBJS)
-		$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) -fsanitize=address -g
+		$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME) #-fsanitize=address -g
 
 RM		= rm -rf
 

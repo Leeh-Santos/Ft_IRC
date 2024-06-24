@@ -117,8 +117,9 @@ void	Server::join_cmd(std::string cmd_line, Client& cli) { //watch out with /r/n
 	//cuidado em pass var, para nao dar merda se so mandarem poucos args tipo /join #asdasd
 	std::vector<std::string> cmd = tokenit_please(cmd_line, 1);
 	std::string channelName = cmd[1];
-	std::string  pass = cmd[2];
-
+	std::string pass = "";
+	if (cmd.size() > 2)
+		pass = cmd[2];
 	std::cout << "Channel name string: " << channelName << std::endl;
 	std::cout << "Channel pass string: " << pass << std::endl;
 
@@ -227,7 +228,7 @@ int Server::channel_exists(std::string channelName){
 
 int Server::check_invite_list(int i, Client& cli){
 	unsigned int x = 0;
-		for (; _channels[i].getInvCliList().size() ; x++){
+		for (; x < _channels[i].getInvCliList().size() ; x++){
 			if (_channels[i].getInvCliList()[x].get_nick() == cli.get_nick()){
 					return x;
 				}
